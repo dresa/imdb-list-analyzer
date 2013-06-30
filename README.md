@@ -1,10 +1,14 @@
 # imdb-list-analyzer
 
-Analysis tools for movie rating lists exported from Internet Movie Database (IMDb) [written in Clojure]
+Analysis tools for movie rating lists exported from the Internet Movie Database (IMDb)
+
+Currently uses Clojure 1.5.1 and Leiningen 2.2.0.
+
+The work has just started...
 
 ## Installation
 
-Download from http://github.com/Eski-or-die/imdb-list-analyzer.
+Download the source code from http://github.com/dresa/imdb-list-analyzer
 
 ## Usage
 
@@ -14,7 +18,7 @@ Initially as a command-line program, perhaps a GUI in the future.
 
 ## Options
 
-FIXME: listing of options this app accepts.
+Accepts the following arguments: filename
 
 ## Examples
 
@@ -23,11 +27,12 @@ FIXME: listing of options this app accepts.
 ### Bugs
 
 ...
+### To do
 
-### Any Other Sections
-### That You Think
-### Might be Useful
-
+First a simple skeleton program, then add command-line functionality and
+more analysis methods. In the future, add a GUI and perhaps a possibility to
+retrieve the ratings directly from IMDb website via authentication (if possible).
+...
 
 ## License
 
