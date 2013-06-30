@@ -1,15 +1,13 @@
+;; For the time being, just a dummy testing suite for the main program.
+;; Tested on Clojure 1.5.1
+;;
+;; Esa Junttila
+;; 2013-06-30
+
 (ns imdb-list-analyzer.core-test
   (:require [clojure.test :refer :all]
             [imdb-list-analyzer.core :refer :all]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
-
-(deftest b-test
-  (testing "FIXME, I fail."
+(deftest passing-test
+  (testing "Trivial test that passes."
     (is (= 1 1))))
-
-(deftest c-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))

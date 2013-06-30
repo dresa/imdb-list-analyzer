@@ -1,3 +1,9 @@
+;; Testing mathematical and analytical functions.
+;; Tested on Clojure 1.5.1
+;;
+;; Esa Junttila
+;; 2013-06-30
+
 (ns imdb-list-analyzer.math-tools-test
   (:require [clojure.test :refer :all]
             [imdb-list-analyzer.math-tools :refer :all]))
