@@ -2,7 +2,7 @@
 ;; Tested on Clojure 1.5.1
 ;;
 ;; Esa Junttila
-;; 2013-06-30
+;; 2013-07-01
 
 (ns imdb-list-analyzer.math-tools-test
   (:require [clojure.test :refer :all]
@@ -67,7 +67,11 @@
 
 
 ;; Test 'dot-product' function
-;(dot-product [2 3 -4] [-5 6 7 0])  ;throws AssertionError
+
+(deftest dot-product-mismatch
+  (testing "Dot product with differing argument sizes"
+    (is (thrown? AssertionError (dot-product [] [2])))
+    (is (thrown? AssertionError (dot-product [2 3 -4] [-5 6 7 0])))))
 
 (deftest dot-product-empty
   (testing "Dot product of empty lists."
@@ -87,8 +91,11 @@
 
 
 ;; Test 'variance' function (reference values computed in R)
-;(variance [7])  ;throws AssertionError
-;(variance [])   ;throws AssertionError
+
+(deftest variance-arg
+  (testing "AssertionError on too small argument length."
+    (is (thrown? AssertionError (variance [])) "invalid arg: empty coll")
+    (is (thrown? AssertionError (variance [7])) "invalid arg: size-one coll")))
 
 (deftest variance-int
   (testing "Variance of a list of positive integers."
@@ -109,7 +116,11 @@
 
 
 ;; Test 'stdev' function (reference values computed in R)
-;(stdev [1])  ;throws AssertionError
+
+(deftest stdev-mismatch
+  (testing "Standard deviation with too small coll size"
+    (is (thrown? AssertionError (stdev [])))
+    (is (thrown? AssertionError (stdev [1])))))
 
 (deftest stdev-pos-int
   (testing "Standard deviation of a list of positive integers."
@@ -129,13 +140,16 @@
 
 
 ;; Test 'correlation' function (reference values computed in R)
-;(correlation [] [])  ;throws AssertionError
-;(correlation [1] [])  ;throws AssertionError
-;(correlation [1] [4])  ;throws AssertionError
-;(correlation [] [6])  ;throws AssertionError
-;(correlation [1 4] [6])  ;throws AssertionError
-;(correlation [4] [6 6])  ;throws AssertionError
-;(correlation [1 2 3] [9 8 7 6])  ;throws AssertionError
+
+(deftest correlation-mismatch
+  (testing "Pearson correlation with differing argument sizes"
+    (is (thrown? AssertionError (correlation [] [])))
+    (is (thrown? AssertionError (correlation [1] [])))
+    (is (thrown? AssertionError (correlation [1] [4])))
+    (is (thrown? AssertionError (correlation [] [6])))
+    (is (thrown? AssertionError (correlation [1 4] [6])))
+    (is (thrown? AssertionError (correlation [4] [6 6])))
+    (is (thrown? AssertionError (correlation [1 2 3] [9 8 7 6])))))
 
 (deftest correlation-pos-int
   (testing "Pearson correlation of lists of positive integers."
