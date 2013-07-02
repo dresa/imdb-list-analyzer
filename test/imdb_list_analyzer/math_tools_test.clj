@@ -2,7 +2,7 @@
 ;; Tested on Clojure 1.5.1
 ;;
 ;; Esa Junttila
-;; 2013-07-01
+;; 2013-07-02
 
 (ns imdb-list-analyzer.math-tools-test
   (:require [clojure.test :refer :all]
@@ -12,6 +12,13 @@
 
 
 ;; Test 'sum' function
+
+(deftest sum-noncoll
+  (testing "Sum of a non-collections and nils."
+    (is (thrown? AssertionError (sum 7)))
+    (is (thrown? AssertionError (sum nil)))
+    (is (thrown? AssertionError (sum [1 [3] 43])))
+    (is (thrown? AssertionError (sum [1 43 nil])))))
 
 (deftest sum-empty
   (testing "Sum of an empty list."
@@ -41,6 +48,13 @@
 
 ;; Test 'mean' function
 
+(deftest mean-noncoll
+  (testing "Mean of a non-collections and nils."
+    (is (thrown? AssertionError (mean 7)))
+    (is (thrown? AssertionError (mean nil)))
+    (is (thrown? AssertionError (mean [1 [4] -7])))
+    (is (thrown? AssertionError (mean [1 nil -7])))))
+
 (deftest mean-empty
   (testing "Mean of an empty list."
     (is (Double/isNaN (mean [])))))
@@ -51,7 +65,7 @@
 
 (deftest mean-one
   (testing "Mean of a list of size one."
-    (is (= (mean [-7]) -7))))
+    (is (= (mean '(-7)) -7))))
 
 (deftest mean-ints
   (testing "Mean of a list of integers."
@@ -67,6 +81,13 @@
 
 
 ;; Test 'dot-product' function
+
+(deftest dot-product-type
+  (testing "Dot-product of a non-collections and nils."
+    (is (thrown? AssertionError (dot-product 7 [5])))
+    (is (thrown? AssertionError (dot-product [5] nil)))
+    (is (thrown? AssertionError (dot-product [5 5 6] [-2 [] -4])))
+    (is (thrown? AssertionError (dot-product [5 5 6] [-2 nil -4])))))
 
 (deftest dot-product-mismatch
   (testing "Dot product with differing argument sizes"
@@ -94,8 +115,15 @@
 
 (deftest variance-arg
   (testing "AssertionError on too small argument length."
-    (is (thrown? AssertionError (variance [])) "invalid arg: empty coll")
-    (is (thrown? AssertionError (variance [7])) "invalid arg: size-one coll")))
+    (is (thrown? AssertionError (variance 6)) "not a collection")
+    (is (thrown? AssertionError (variance nil)) "not a collection")
+    (is (thrown? AssertionError (variance Double/NaN)) "not a collection")
+    (is (thrown? AssertionError (variance [])) "too small collection")
+    (is (thrown? AssertionError (variance [7])) "too small collection")
+    (is (thrown? AssertionError (variance [1 2 nil])) "non-number in collection")
+    (is (thrown? AssertionError (variance [1 [] 2])) "non-number in collection")
+    ))
+    
 
 (deftest variance-int
   (testing "Variance of a list of positive integers."
@@ -149,6 +177,8 @@
     (is (thrown? AssertionError (correlation [] [6])))
     (is (thrown? AssertionError (correlation [1 4] [6])))
     (is (thrown? AssertionError (correlation [4] [6 6])))
+    (is (thrown? AssertionError (correlation [3 6] [4 nil])))
+    (is (thrown? AssertionError (correlation [4 7] [6 [6]])))
     (is (thrown? AssertionError (correlation [1 2 3] [9 8 7 6])))))
 
 (deftest correlation-pos-int
@@ -159,6 +189,10 @@
   (testing "Linear Pearson correlation of both positive and negative integers."
     (is (< (Math/abs (- (correlation [-1 0 1 2 5] [1 2 3 4 7]) 1.0)) tol))))
 
+(deftest correlation-zero-variance
+  (testing "Linear Pearson correlation of a zero-variance collection."
+    (is (Double/isNaN (correlation [-1 0 1 2 5] [3 3 3 3 3])))))
+
 (deftest correlation-int-double-1
   (testing "Pearson correlation of lists of integers, within a tolerance."
     (is (< (Math/abs (- (correlation [1 2 3] [2 3 5]) 0.9819805)) tol))))
@@ -166,3 +200,7 @@
 (deftest correlation-int-double-2
   (testing "Pearson correlation of lists of positive and negative integers, within a tolerance."
     (is (< (Math/abs (- (correlation [1 -2 4 6 3] [3 3 5 2 -4]) -0.1102462)) tol))))
+
+(deftest correlation-int-double-3
+  (testing "Pearson correlation of large integers, within a tolerance."
+    (is (< (Math/abs (- (correlation [1000000000 -2000000000 1000000000] [500000000 1500000000 -400000000]) -0.8808123)) tol))))
