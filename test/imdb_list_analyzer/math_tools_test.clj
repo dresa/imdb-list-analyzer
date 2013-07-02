@@ -171,7 +171,10 @@
 
 (deftest correlation-mismatch
   (testing "Pearson correlation with differing argument sizes"
-    (is (thrown? AssertionError (correlation [] [])))
+    (is (thrown? AssertionError (correlation [3 4] nil)))
+    (is (thrown? AssertionError (correlation Double/NaN [7 8])))
+    (is (thrown? AssertionError (correlation [4 5 [6]] [7 8 9])))
+    (is (thrown? AssertionError (correlation [1 2 3] [4 nil 6])))
     (is (thrown? AssertionError (correlation [1] [])))
     (is (thrown? AssertionError (correlation [1] [4])))
     (is (thrown? AssertionError (correlation [] [6])))
