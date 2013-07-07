@@ -22,6 +22,8 @@
   (try (read-string number-string)
     (catch Exception e nil)))
 
+(def date-locale (java.util.Locale/getDefault))
+(def date-time-zone (java.util.TimeZone/getDefault))
 (def date-syntaxes ["EEE MMM d HH:mm:ss yyyy" "yyyy-MM-dd" "yyyy-MM"])
 
 (defn parse-date
@@ -29,10 +31,12 @@
     (let [f #(try (parse-date date-string %) (catch java.text.ParseException pe nil))]
       (some #(if (complement (nil? %)) %) (map f date-syntaxes))))
   ([date-string syntax]
-    (let [formatter (java.text.SimpleDateFormat. syntax java.util.Locale/US)]
+    (let [formatter (java.text.SimpleDateFormat. syntax date-locale)
+          cal (java.util.Calendar/getInstance date-time-zone date-locale)]
       (do
-        (.setTimeZone formatter (java.util.TimeZone/getTimeZone "GMT"))
-        (.parse formatter date-string)))))
+        (.setTimeZone formatter date-time-zone)
+        (.setTime cal (.parse formatter date-string))
+        cal))))
 
 (defn parse-vec
   [delim text]
@@ -41,7 +45,7 @@
 (def input-fns
   [parse-number   ; int
    identity
-   parse-date  ; TODO: PROBLEM WITH TIMEZONES
+   parse-date
    (fn [_] (constantly nil))  ; unknown date syntax
    identity
    identity
