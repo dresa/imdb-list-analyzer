@@ -15,4 +15,4 @@
   (alter-var-root #'*read-eval* (constantly false))
   (do
     (println "Hello, World!")
-    (println (count (imdb/read-data "resources/example_ratings.csv")))))
+    (println (count (imdb/read-raw-data "resources/example_ratings.csv")))))

@@ -58,7 +58,7 @@
   [title-tokens]
   (apply ->Title (map #(%1 %2) input-fns title-tokens)))
 
-(defn read-data
+(defn read-raw-data
   "Read IMDb ratings data from a CSV-formatted file.
    The result is a lazy sequence of vectors (of fields)."
   [filename]
@@ -67,7 +67,8 @@
 
 (defn read-imdb-data
   [filename]
-  (let [data (read-data filename)
+  (let [data (read-raw-data filename)
         headers (apply ->Title (first data))
         lines (rest data)]
     (conj (map parse-line lines) headers)))
+
