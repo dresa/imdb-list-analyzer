@@ -15,6 +15,10 @@
 ; Movie title that contains all movie-related information
 (defrecord Title [list-index id created modified desc title type directors rate imdb-rate runtime year genres numvotes released URL])
 
+; Range of values for 'rate' information
+(def rates-range (map inc (range 10)))
+
+
 (defn parse-number
   "Parse a number from a number string. Returns the number, integer or double,
    or nil if unsuccessful."
