@@ -24,7 +24,6 @@
 
 (def date-syntaxes ["EEE MMM d HH:mm:ss yyyy" "yyyy-MM-dd" "yyyy-MM"])
 
-; TODO: use clj-date instead?
 (defn parse-date
   ([date-string]
     (let [f #(try (parse-date date-string %) (catch java.text.ParseException pe nil))]
