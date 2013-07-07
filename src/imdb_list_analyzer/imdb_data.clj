@@ -30,7 +30,10 @@
     (let [f #(try (parse-date date-string %) (catch java.text.ParseException pe nil))]
       (some #(if (complement (nil? %)) %) (map f date-syntaxes))))
   ([date-string syntax]
-    (.parse (java.text.SimpleDateFormat. syntax java.util.Locale/US) date-string)))
+    (let [formatter (java.text.SimpleDateFormat. syntax java.util.Locale/US)]
+      (do
+        (.setTimeZone formatter (java.util.TimeZone/getTimeZone "GMT"))
+        (.parse formatter date-string)))))
 
 (defn parse-vec
   [delim text]
