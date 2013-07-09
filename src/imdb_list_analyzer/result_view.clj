@@ -22,8 +22,12 @@
      "Frequencies of ratings" "\n"
      (clojure.string/join
        (map
-         #(clojure.string/join
-           ["Rate " % " occurs " ((:rate-freq-hash ana-results) %) " times\n"])
+         (fn [rate]
+           (let [freq ((:rate-freq-hash ana-results) rate)
+                 num (:num-rates ana-results)]
+             (clojure.string/join
+               ["Rate " rate " occurs " freq " times ("
+                (format "%.2f" (double (* 100 (/ freq num)))) " %)\n"])))
          imdb/rates-range))
      "\n"
      "Correlation between ratings and IMDb rating averages" "\n"
