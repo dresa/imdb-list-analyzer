@@ -13,6 +13,22 @@
   [titles-coll]
   (count titles-coll))
 
+(defn rating-mean
+  [titles-coll]
+  (mtools/mean (map :rate titles-coll)))
+
+(defn rating-stdev
+  [titles-coll]
+  (mtools/stdev (map :rate titles-coll)))
+
+(defn rating-entropy
+  [titles-coll]
+  (mtools/entropy (vals (frequencies (map :rate titles-coll)))))
+
+(defn max-entropy
+  [n]
+  (mtools/entropy (repeat n 1)))
+
 (defn rating-frequencies
   [titles-coll]
   (merge
