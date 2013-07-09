@@ -9,7 +9,7 @@
 (defn compute-results
   [titles-coll]
   (map->AnalysisResult
-    {:num-rates (ana/num-ratings titles-coll),
+    {:num-rates (ana/rating-num titles-coll),
      :imdb-corr (ana/corr-vs-imdb titles-coll)
      :rate-freq-hash (ana/rating-frequencies titles-coll)}))
 

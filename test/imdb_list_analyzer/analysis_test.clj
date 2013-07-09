@@ -19,5 +19,5 @@
 
 (deftest example-imdb-count
   (testing "Number of ratings."
-    (is (= (num-ratings (rest (read-imdb-data "resources/example_ratings.csv"))) 1387))))
+    (is (= (rating-num (rest (read-imdb-data "resources/example_ratings.csv"))) 1387))))
 

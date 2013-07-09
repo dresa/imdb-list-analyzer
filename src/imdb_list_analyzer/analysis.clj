@@ -9,7 +9,7 @@
   [titles-coll]
   (mtools/correlation (map :rate titles-coll) (map :imdb-rate titles-coll)))
 
-(defn num-ratings
+(defn rating-num
   [titles-coll]
   (count titles-coll))
 
