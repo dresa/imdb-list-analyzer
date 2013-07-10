@@ -12,10 +12,14 @@
   (map->AnalysisResult
     {:num (ana/rating-num titles-coll),
      :mean (ana/rating-mean titles-coll)
+     :imdb-mean (ana/imdb-mean titles-coll)
      :stdev (ana/rating-stdev titles-coll)
+     :imdb-stdev (ana/imdb-stdev titles-coll)
      :corr (ana/corr-vs-imdb titles-coll)
      :freq-hash (ana/rating-frequencies titles-coll)
-     :entropy (ana/rating-entropy titles-coll)}))
+     :imdb-freq-hash (ana/imdb-frequencies titles-coll)
+     :entropy (ana/rating-entropy titles-coll)
+     :imdb-entropy (ana/imdb-entropy titles-coll)}))
 
 (def max-entr (ana/max-entropy (count imdb/rates-range)))
 
@@ -35,23 +39,27 @@
     ["Number of movie ratings" "\n"
      (:num ana-results) "\n"
      "Mean of movie ratings" "\n"
-     (limited-precision (:mean ana-results) 3) "\n"
+     (limited-precision (:mean ana-results) 3)
+     " (IMDb: " (limited-precision (:imdb-mean ana-results) 3) ")" "\n"
      "Standard deviation of movie ratings" "\n"
-     (:stdev ana-results) "\n"
+     (limited-precision (:stdev ana-results) 3)
+     " (IMDb: " (limited-precision (:imdb-stdev ana-results) 3) ")" "\n"
      "Correlation between ratings and IMDb rating averages" "\n"
-     (:corr ana-results) "\n"
+     (limited-precision (:corr ana-results) 3) "\n"
      "Frequencies of ratings" "\n"
      (clojure.string/join
        (map
          (fn [rate]
            (let [freq ((:freq-hash ana-results) rate)
+                 imdb-freq ((:imdb-freq-hash ana-results) rate)
                  num (:num ana-results)]
              (clojure.string/join
                ["Rate " rate " occurs " freq " times ("
-                (limited-precision (* 100 (/ freq num)) 3) " %)\n"])))
+                (limited-precision (* 100 (/ freq num)) 3) " %) versus IMDb " imdb-freq "\n"])))
          imdb/rates-range))
      "Entropy of ratings (in bits)" "\n"
-     (limited-precision (:entropy ana-results) 3) " (maximum is " (limited-precision max-entr 3) ")" "\n"
+     (limited-precision (:entropy ana-results) 3) " (maximum is " (limited-precision max-entr 3) ")"
+     " (IMDb: " (limited-precision (:imdb-entropy ana-results) 3) ")" "\n"
      ]))
 
 (defn print-result
