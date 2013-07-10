@@ -17,13 +17,25 @@
   [titles-coll]
   (mtools/mean (map :rate titles-coll)))
 
+(defn imdb-mean
+  [titles-coll]
+  (mtools/mean (map :imdb-rate titles-coll)))
+
 (defn rating-stdev
   [titles-coll]
   (mtools/stdev (map :rate titles-coll)))
 
+(defn imdb-stdev
+  [titles-coll]
+  (mtools/stdev (map :imdb-rate titles-coll)))
+
 (defn rating-entropy
   [titles-coll]
   (mtools/entropy (vals (frequencies (map :rate titles-coll)))))
+
+(defn imdb-entropy
+  [titles-coll]
+  (mtools/entropy (vals (frequencies (map #(Math/round (:imdb-rate %)) titles-coll)))))
 
 (defn max-entropy
   [n]
@@ -34,4 +46,10 @@
   (merge
     (zipmap imdb/rates-range (repeat (count imdb/rates-range) 0))  ; defaults
     (frequencies (map :rate titles-coll))))  ; actual nonzero frequencies
+
+(defn imdb-frequencies
+  [titles-coll]
+  (merge
+    (zipmap imdb/rates-range (repeat (count imdb/rates-range) 0))  ; defaults
+    (frequencies (map #(Math/round (:imdb-rate %)) titles-coll))))  ; actual nonzero frequencies
 
