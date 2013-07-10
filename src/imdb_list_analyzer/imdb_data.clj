@@ -44,7 +44,7 @@
 
 (defn parse-vec
   [delim text]
-  (clojure.string/split text (re-pattern delim)))
+  (map clojure.string/trim (clojure.string/split text (re-pattern delim))))
 
 (def input-fns
   [parse-number   ; int
