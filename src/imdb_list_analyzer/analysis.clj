@@ -3,7 +3,8 @@
 (ns imdb-list-analyzer.analysis
   (:require
     [imdb-list-analyzer.math-tools :as mtools]
-    [imdb-list-analyzer.imdb-data :as imdb]))
+    [imdb-list-analyzer.imdb-data :as imdb]
+    [imdb-list-analyzer.common :as com]))
 
 (defn corr-vs-imdb
   [titles-coll]
@@ -52,4 +53,9 @@
   (merge
     (zipmap imdb/rates-range (repeat (count imdb/rates-range) 0))  ; defaults
     (frequencies (map #(Math/round (:imdb-rate %)) titles-coll))))  ; actual nonzero frequencies
+
+(defn rating-directors
+  [titles-coll]
+  (com/invert-multimap
+    (map #(vector (:rate %) (:directors %)) titles-coll)))
 
