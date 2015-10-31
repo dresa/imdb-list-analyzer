@@ -27,3 +27,9 @@
 	  (zipmap uniq (repeat (count uniq) []))
       (for [[key val-list] rate-lists, val val-list] {val key}))))
 
+
+(defn find-first
+  "Return the first value in coll for which the predicate returns true."
+  [pred coll]
+  (first (filter pred coll)))
+
