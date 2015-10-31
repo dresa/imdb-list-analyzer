@@ -83,26 +83,30 @@
         emp-distr (mtools/gen-emp-distr (map :rate titles-coll))]
     (map vector dirs (director-empirical-rank (map second dirs) emp-distr))))
 
-(defn small-test
-  []
-  (let [coll (rest (imdb/read-imdb-data "resources/example_ratings.csv"))
-        rank (reverse (sort-by second (director-rank coll)))]
+(defn director-qualities
+  [titles-coll]
+  (reverse (sort-by second (director-rank titles-coll))))
+
+(defn print-director-rank
+  [dir rank-val rates]
+  (println (format "%-26s, %-6s, %s" (str dir) (double rank-val) (str rates))))
+
+(defn print-directors-ranks
+  [dir-ranks title]
+  (do
+    (println title)
+    (println "Director, Rank-p-value, Rates\n-----------------------------")
+    (doseq [[[dir rates] rank-val] dir-ranks] (print-director-rank dir rank-val rates))))
+
+(defn analyze
+  [titles-coll]
+  (let [dir-ranks (director-qualities titles-coll)]
     (do
-      (println "The best:")
-      (let [best (take 10 rank)]
-        (do
-          (println "Director, Rank-p-value, Rates\n---------------------------")
-          (doseq [[[dir rates] rank-val] best] (println (str dir ", " (double rank-val) ", " rates)))))
-      (println "The worst:")
-      (let [worst (take-last 10 rank)]
-        (do
-          (println "Director, Rank-p-value, Rates\n---------------------------")
-          (doseq [[[dir rates] rank-val] worst] (println (str dir ", " (double rank-val) ", " rates))))))
-    ;(rating-directors coll)
-    ;(mtools/gen-emp-distr (map :rate coll))
-    ;(reverse (sort-by second (director-rank coll)))
-    ;(director-empirical-rank [[2 2 1] [1 2 3 4] [4] [1]] (mtools/gen-emp-distr [1 1 1 2 3 3 4 4 4 4]))
-    ;(compute-reference-value [1 1 2 2 3 4 4 4 3 3] (mtools/gen-emp-distr [1 1 1 2 3 3 4 4 4 4]) (/ 27 10))
-    ;(take 100 (repeatedly #(sample-null-ref-value 4 (mtools/gen-emp-distr [1 1 1 2 3 3 4 4 4 4]))))
-))
+      (println "-------------------------")
+      (println "- IMDb analysis results -")
+      (println "-------------------------")
+	  (println)
+	  (print-directors-ranks (take 10 dir-ranks) "The best:")
+	  (println)
+	  (print-directors-ranks (reverse(take-last 10 dir-ranks)) "The worst:"))))
 
