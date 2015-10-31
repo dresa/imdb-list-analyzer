@@ -4,7 +4,8 @@
 ;;
 
 (ns imdb-list-analyzer.core
-  (:require [imdb-list-analyzer.imdb-data :as imdb])
+  (:require [imdb-list-analyzer.imdb-data :as imdb]
+            [imdb-list-analyzer.analysis :as ana])
   (:gen-class))
 
 (defn -main
@@ -15,4 +16,9 @@
   (alter-var-root #'*read-eval* (constantly false))
   (do
     (println "Hello, World!")
-    (println (count (imdb/read-raw-data "resources/example_ratings.csv")))))
+    (println (count (ana/small-test)))))
+
+
+
+
+    ;(println (count (imdb/read-raw-data "resources/example_ratings.csv")))))
