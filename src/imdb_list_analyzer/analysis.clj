@@ -87,26 +87,3 @@
   [titles-coll]
   (reverse (sort-by second (director-rank titles-coll))))
 
-(defn print-director-rank
-  [dir rank-val rates]
-  (println (format "%-26s, %-6s, %s" (str dir) (double rank-val) (str rates))))
-
-(defn print-directors-ranks
-  [dir-ranks title]
-  (do
-    (println title)
-    (println "Director, Rank-p-value, Rates\n-----------------------------")
-    (doseq [[[dir rates] rank-val] dir-ranks] (print-director-rank dir rank-val rates))))
-
-(defn analyze
-  [titles-coll]
-  (let [dir-ranks (director-qualities titles-coll)]
-    (do
-      (println "-------------------------")
-      (println "- IMDb analysis results -")
-      (println "-------------------------")
-	  (println)
-	  (print-directors-ranks (take 10 dir-ranks) "The best:")
-	  (println)
-	  (print-directors-ranks (reverse(take-last 10 dir-ranks)) "The worst:"))))
-

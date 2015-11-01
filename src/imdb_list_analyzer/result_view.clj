@@ -19,7 +19,8 @@
      :freq-hash (ana/rating-frequencies titles-coll)
      :imdb-freq-hash (ana/imdb-frequencies titles-coll)
      :entropy (ana/rating-entropy titles-coll)
-     :imdb-entropy (ana/imdb-entropy titles-coll)}))
+     :imdb-entropy (ana/imdb-entropy titles-coll)
+	 :dir-ranks (ana/director-qualities titles-coll)}))
 
 (def max-entr (ana/max-entropy (count imdb/rates-range)))
 
@@ -31,6 +32,20 @@
    :post (string? %)}
   (let [format-str (str "%." num-decimals "f")]
     (java.lang.String/format (java.util.Locale/getDefault) format-str (to-array [(double x)]))))
+
+
+(defn dir-rank-str
+  [dir rank-val rates]
+  (format "%-26s, %-6s, %s" (str dir) (double rank-val) (str rates)))
+
+(defn directors-ranks-strs
+  [dir-ranks title]
+  (clojure.string/join
+    [title "\n"
+     "Director-name, Rank-p-value, Rates" "\n"
+     "----------------------------------" "\n"
+    (clojure.string/join "\n" (for [[[dir rates] rank-val] dir-ranks] (dir-rank-str dir rank-val rates)))
+    ]))
 
 (defn get-result-string
   "Convert analysis results into a string."
@@ -60,6 +75,9 @@
      "Entropy of ratings (in bits)" "\n"
      (limited-precision (:entropy ana-results) 3) " (maximum is " (limited-precision max-entr 3) ")"
      " (IMDb: " (limited-precision (:imdb-entropy ana-results) 3) ")" "\n"
+	 "Outstanding directors:" "\n"
+     (directors-ranks-strs (take 10 (:dir-ranks ana-results)) "The best directors:") "\n"
+     (directors-ranks-strs (take-last 10 (:dir-ranks ana-results)) "The worst directors:") "\n"
      ]))
 
 (defn print-result

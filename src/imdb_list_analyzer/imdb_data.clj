@@ -9,13 +9,13 @@
 
 ; In order to interpret special Western characters correctly, such as
 ; Scandinavian characters, make a best guess for the encoding.
-; It could be, for example, "UTF-8" or "windows-1253"
+; It could be, for example, "UTF-8" or "windows-1252"
 (def local-encoding (.name (java.nio.charset.Charset/defaultCharset)))
 
 ; Movie title that contains all movie-related information
 (defrecord Title [list-index id created modified desc title type directors rate imdb-rate runtime year genres numvotes released URL])
 
-; Range of values for 'rate' information
+; Range of values for 'rate' information: 1,2,...,9,10.
 (def rates-range (map inc (range 10)))
 
 
@@ -47,22 +47,22 @@
   (map clojure.string/trim (clojure.string/split text (re-pattern delim))))
 
 (def input-fns
-  [parse-number   ; int
-   identity
-   parse-date
-   (fn [_] (constantly nil))  ; unknown date syntax
-   identity
-   identity
-   identity
-   (partial parse-vec ",")
-   parse-number  ; int
-   parse-number  ; double
-   parse-number  ; int PROBLEM
-   parse-number  ; int
-   (partial parse-vec ",")
-   parse-number  ; int
-   parse-date
-   identity])
+  [parse-number               ; "position", int
+   identity                   ; "const", str
+   parse-date                 ; "created", date
+   (fn [_] (constantly nil))  ; "modified", unknown date syntax
+   identity                   ; "description", str
+   identity                   ; "Title", str
+   identity                   ; "Title type", str
+   (partial parse-vec ",")    ; "Directors"
+   parse-number               ; "You rated", int     
+   parse-number               ; "IMDb Rating", double
+   parse-number               ; "Runtime (mins)", int PROBLEM
+   parse-number               ; "Year", int
+   (partial parse-vec ",")    ; "Genres", seq of str
+   parse-number               ; "Num. Votes", int
+   parse-date                 ; "Release Date (month/day/year)", date
+   identity])                 ; "URL", str
 
 (defn parse-line
   [title-tokens]
