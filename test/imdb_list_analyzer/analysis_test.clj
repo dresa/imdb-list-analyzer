@@ -11,13 +11,13 @@
 
 (def tol 0.0000001)
 
-;; Test 'corr-vs-imdb' function (reference value from Excel)
+;; Test 'corr-vs-imdb' function (reference value 0.569931605689576 from Excel)
 
 (deftest example-imdb-corr
   (testing "Correlation between rates and IMDb average rates."
-    (is (< (Math/abs (- (corr-vs-imdb (rest (read-imdb-data "resources/example_ratings.csv"))) 0.597480454)) tol))))
+    (is (< (Math/abs (- (corr-vs-imdb (rest (read-imdb-data "resources/example_ratings_A.csv"))) 0.569931605689576)) tol))))
 
 (deftest example-imdb-count
   (testing "Number of ratings."
-    (is (= (rating-num (rest (read-imdb-data "resources/example_ratings.csv"))) 1387))))
+    (is (= (rating-num (rest (read-imdb-data "resources/example_ratings_A.csv"))) 1647))))
 
