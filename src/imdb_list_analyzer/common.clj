@@ -1,5 +1,5 @@
-; Common functions to be used anywhere in the
-; imdb-list-analyzer program.
+;;; Common functions to be used anywhere in the
+;;; imdb-list-analyzer program.
 
 (ns imdb-list-analyzer.common)
  
@@ -24,7 +24,7 @@
   (let [uniq (distinct (flatten (map second rate-lists)))]
     (reduce
       (fn [coll, val] (merge-with conj coll val))
-	  (zipmap uniq (repeat (count uniq) []))
+      (zipmap uniq (repeat (count uniq) []))
       (for [[key val-list] rate-lists, val val-list] {val key}))))
 
 
