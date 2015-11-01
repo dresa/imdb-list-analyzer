@@ -4,7 +4,8 @@
   (:require
     [imdb-list-analyzer.math-tools :as mtools]
     [imdb-list-analyzer.imdb-data :as imdb]
-    [imdb-list-analyzer.common :as com]))
+    [imdb-list-analyzer.common :as com]
+	[clojure.set]))
 
 (defn corr-vs-imdb
   [titles-coll]
@@ -86,4 +87,28 @@
 (defn director-qualities
   [titles-coll]
   (reverse (sort-by second (director-rank titles-coll))))
+
+
+; Dual analysis functions
+
+(defn common-id-set
+  [titles-coll another-titles-coll]
+  (let [a-ids (set (map #(:id %) titles-coll))
+        b-ids (set (map #(:id %) another-titles-coll))]
+    (clojure.set/intersection a-ids b-ids)))
+
+(defn sorted-common-titles
+  [titles-coll id-set]
+  (sort-by :id (filter #(contains? id-set (:id %)) titles-coll)))
+
+(defn corr-vs-another
+  [titles-coll-a titles-coll-b]
+  (let [id-set (common-id-set titles-coll-a titles-coll-b)
+        sorted-coll-a (sorted-common-titles titles-coll-a id-set)
+        sorted-coll-b (sorted-common-titles titles-coll-b id-set)]
+    (mtools/correlation (map :rate sorted-coll-a) (map :rate sorted-coll-b))))
+
+(defn common-count
+  [titles-coll another-titles-coll]
+  (count (common-id-set titles-coll another-titles-coll)))
 
