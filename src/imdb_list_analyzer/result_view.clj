@@ -47,20 +47,35 @@
     (clojure.string/join "\n" (for [[[dir rates] rank-val] dir-ranks] (dir-rank-str dir rank-val rates)))
     ]))
 
-(defn get-result-string
-  "Convert analysis results into a string."
+(defn view-count-str
   [ana-results]
-  (clojure.string/join
-    ["Number of movie ratings" "\n"
-     (:num ana-results) "\n"
-     "Mean of movie ratings" "\n"
-     (limited-precision (:mean ana-results) 3)
-     " (IMDb: " (limited-precision (:imdb-mean ana-results) 3) ")" "\n"
+  (clojure.string/join [
+    "Number of movie ratings" "\n"
+	(:num ana-results)]))
+
+(defn view-mean-str
+  [ana-results]
+  (clojure.string/join [
+    "Mean of movie ratings" "\n"
+	(limited-precision (:mean ana-results) 3)
+	" (IMDb: " (limited-precision (:imdb-mean ana-results) 3) ")"]))
+
+(defn view-sd-str
+  [ana-results]
+  (clojure.string/join [
      "Standard deviation of movie ratings" "\n"
      (limited-precision (:stdev ana-results) 3)
-     " (IMDb: " (limited-precision (:imdb-stdev ana-results) 3) ")" "\n"
+     " (IMDb: " (limited-precision (:imdb-stdev ana-results) 3) ")"]))
+
+(defn view-corr-str
+  [ana-results]
+  (clojure.string/join [
      "Correlation between ratings and IMDb rating averages" "\n"
-     (limited-precision (:corr ana-results) 3) "\n"
+     (limited-precision (:corr ana-results) 3)]))
+
+(defn view-freq-str
+  [ana-results]
+  (clojure.string/join [
      "Frequencies of ratings" "\n"
      (clojure.string/join
        (map
@@ -71,17 +86,38 @@
              (clojure.string/join
                ["Rate " rate " occurs " freq " times ("
                 (limited-precision (* 100 (/ freq num)) 3) " %) versus IMDb " imdb-freq "\n"])))
-         imdb/rates-range))
-     "Entropy of ratings (in bits)" "\n"
-     (limited-precision (:entropy ana-results) 3) " (maximum is " (limited-precision max-entr 3) ")"
-     " (IMDb: " (limited-precision (:imdb-entropy ana-results) 3) ")" "\n"
-	 "Outstanding directors:" "\n"
-     (directors-ranks-strs (take 10 (:dir-ranks ana-results)) "The best directors:") "\n"
-     (directors-ranks-strs (take-last 10 (:dir-ranks ana-results)) "The worst directors:") "\n"
-     ]))
+         imdb/rates-range))]))
 
-(defn print-result
+(defn view-entropy-str
+  [ana-results]
+  (clojure.string/join [
+    "Entropy of ratings (in bits)" "\n"
+    (limited-precision (:entropy ana-results) 3) "(in IMDb " (limited-precision (:imdb-entropy ana-results) 3) ";"
+    " maximum is " (limited-precision max-entr 3) ")" "\n"]))
+
+(defn view-directors-str
+  [ana-results]
+  (clojure.string/join [
+    (directors-ranks-strs (take 10 (:dir-ranks ana-results)) "The best directors:") "\n\n"
+    (directors-ranks-strs (take-last 10 (:dir-ranks ana-results)) "The worst directors:")]))
+
+(defn view-result-str
+  "Convert analysis results into a string."
+  [ana-results]
+  (clojure.string/join "\n"
+    ["-------------------------"
+	 "- IMDb analysis results -"
+	 "-------------------------"
+	 (view-count-str ana-results)
+     (view-mean-str ana-results)
+	 (view-sd-str ana-results)
+	 (view-corr-str ana-results)
+	 (view-freq-str ana-results)
+	 (view-entropy-str ana-results)
+	 (view-directors-str ana-results)]))
+
+(defn view-result
   "Print analysis results in human-readable form to standard output."
   [ana-result]
-  (println (get-result-string ana-result)))
+  (println (view-result-str ana-result)))
 

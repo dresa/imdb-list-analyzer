@@ -9,12 +9,30 @@
 			[imdb-list-analyzer.result-view :as resview])
   (:gen-class))
 
+(defn one-file-analysis
+  [filename]
+  (if (.exists (clojure.java.io/as-file filename))
+    (do
+      (println (str "Analyzing single-list IMDb ratings from " filename))
+      (resview/view-result (resview/compute-results (rest (imdb/read-imdb-data filename)))))
+    (.println *err* (str "Cannot find input file:" filename))))
+
+(defn two-file-analysis [filename-a, filename-b] "Two-file analysis has not been implemented yet.")
+
+(defn print-usage []
+  (println
+    "  Usage:\n"
+    "   lein run <filenameA> [filenameB]\n"
+    "   for example: lein run resources\\example_ratings_A.csv"))
+
 (defn -main
   "Run IMDb analysis on the example dataset."
   [& args]
-  (let [titles-coll (rest (imdb/read-imdb-data "resources/example_ratings_A.csv"))]
+  (let [filename "resources/example_ratings_A.csv"]
     ;; work around dangerous default behaviour in Clojure
     (alter-var-root #'*read-eval* (constantly false))
-    (do
-      (println "Analyzing IMDb ratings list data...")
-	  (resview/print-result (resview/compute-results titles-coll)))))
+    (cond
+	  (= (count args) 0) (print-usage)
+	  (= (count args) 1) (one-file-analysis (first args))
+	  (= (count args) 2) (two-file-analysis (first args) (second args))
+	  :else (print-usage))))
