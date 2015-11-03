@@ -2,8 +2,7 @@
 
 (ns imdb-list-analyzer.dual-result-view
   (:require [imdb-list-analyzer.analysis :as ana]
-            [imdb-list-analyzer.imdb-data :as imdb]
-			[imdb-list-analyzer.result-view :as resview]))
+            [imdb-list-analyzer.result-view :as resview]))
 
 "Storage for dual-list analysis results"
 (defrecord DualAnalysisResult [common corr])

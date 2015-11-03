@@ -47,7 +47,7 @@
   "Compute the Shannon information entropy on the empirical distribution of
   rounded IMDb average ratings on given titles"
   [titles-coll]
-  (mtools/entropy (vals (frequencies (map #(Math/round (:imdb-rate %)) titles-coll)))))
+  (mtools/entropy (vals (frequencies (map #(Math/round ^double (:imdb-rate %)) titles-coll)))))
 
 (defn max-entropy
   "Compute the theoretical maximum Shannon entropy, given a number of discrete
@@ -67,7 +67,7 @@
   [titles-coll]
   (merge
     (zipmap imdb/rates-range (repeat (count imdb/rates-range) 0))  ; defaults
-    (frequencies (map #(Math/round (:imdb-rate %)) titles-coll))))  ; actual nonzero frequencies
+    (frequencies (map #(Math/round ^double (:imdb-rate %)) titles-coll))))  ; actual nonzero frequencies
 
 (defn- rating-directors
   "Mapping that connects each director to all ratings on

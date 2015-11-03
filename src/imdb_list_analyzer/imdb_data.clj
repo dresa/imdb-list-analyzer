@@ -5,12 +5,18 @@
 
 (ns imdb-list-analyzer.imdb-data
   (:require [clojure-csv.core :as csv]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io])
+  (:import java.nio.charset.Charset
+           [java.text ParseException
+                      SimpleDateFormat]
+           [java.util Locale
+                      TimeZone
+                      Calendar]))
 
 ;; In order to interpret special Western characters correctly, such as
 ;; Scandinavian characters, make a best guess for the encoding.
 ;; It could be, for example, "UTF-8" or "windows-1252"
-(def local-encoding (.name (java.nio.charset.Charset/defaultCharset)))
+(def local-encoding (.name (Charset/defaultCharset)))
 
 "Movie title that contains all movie-related information"
 (defrecord Title [list-index id created modified desc title type directors rate imdb-rate runtime year genres numvotes released URL])
@@ -24,24 +30,26 @@
    or nil if unsuccessful."
   [number-string]
   (try (read-string number-string)
-    (catch Exception e nil)))
+    (catch Exception _ nil)))
 
-(def date-locale (java.util.Locale/getDefault))
-(def date-time-zone (java.util.TimeZone/getDefault))
+(def date-locale (Locale/getDefault))
+(def date-time-zone (TimeZone/getDefault))
 (def date-syntaxes ["EEE MMM d HH:mm:ss yyyy" "yyyy-MM-dd" "yyyy-MM"])
 
 (defn parse-date
   "Parse a date from a date-string based on the most common IMDb date formats.
+  Either (parse-date date-str) or (parse-date date-str format-str).
   For example:
     (parse-date '2015-12-31')
+    (parse-date '2015-12-31', 'yyyy-MM-dd')
     (parse-date '2015-04')
     (parse-date 'Thu Oct 29 00:00:00 2015')"
   ([date-string]
-    (let [f #(try (parse-date date-string %) (catch java.text.ParseException pe nil))]
+    (let [f #(try (parse-date date-string %) (catch ParseException _ nil))]
       (some #(if (complement (nil? %)) %) (map f date-syntaxes))))
   ([date-string syntax]
-    (let [formatter (java.text.SimpleDateFormat. syntax date-locale)
-          cal (java.util.Calendar/getInstance date-time-zone date-locale)]
+    (let [formatter (SimpleDateFormat. ^String syntax ^Locale date-locale)
+          cal (Calendar/getInstance date-time-zone date-locale)]
       (do
         (.setTimeZone formatter date-time-zone)
         (.setTime cal (.parse formatter date-string))

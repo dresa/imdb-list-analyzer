@@ -1,11 +1,13 @@
 ;;; Viewer for results from IMDb list analysis (on a single list)
 
 (ns imdb-list-analyzer.result-view
-  (:require [imdb-list-analyzer.analysis :as ana]
-            [imdb-list-analyzer.imdb-data :as imdb]))
+  (:require [clojure.string :as string]
+            [imdb-list-analyzer.analysis :as ana]
+            [imdb-list-analyzer.imdb-data :as imdb])
+  (:import (java.util Locale)))
 
 "Collection of all analysis results"
-(defrecord AnalysisResult [num mean stdev corr freq-hash entropy])
+(defrecord AnalysisResult [num mean stdev corr freq-hash entropy]) ; TODO: should we list all keys?
 
 (defn compute-results
   "Return a hash map of analysis results."
@@ -33,8 +35,7 @@
   {:pre [(number? x) (integer? num-decimals) (not (neg? num-decimals))]
    :post (string? %)}
   (let [format-str (str "%." num-decimals "f")]
-    (java.lang.String/format (java.util.Locale/getDefault) format-str (to-array [(double x)]))))
-
+    (String/format (Locale/getDefault) format-str (to-array [(double x)]))))
 
 (defn dir-rank-str
   "String representation of a single director result, along with p-value and ratings"
@@ -45,24 +46,23 @@
   "String representation of a collection of director results,
   along with p-values and individual ratings"
   [dir-ranks title]
-  (clojure.string/join
+  (string/join
     [title "\n"
      "Director-name; Rank-p-value; Rates" "\n"
      "----------------------------------" "\n"
-    (clojure.string/join "\n" (for [[[dir rates] rank-val] dir-ranks] (dir-rank-str dir rank-val rates)))
-    ]))
+    (string/join "\n" (for [[[dir rates] rank-val] dir-ranks] (dir-rank-str dir rank-val rates)))]))
 
 (defn view-count-str
   "String representation for title count"
   [ana-results]
-  (clojure.string/join [
+  (string/join [
     "Number of movie ratings" "\n"
     (:num ana-results) "\n"]))
 
 (defn view-mean-str
   "String representation for mean rating"
   [ana-results]
-  (clojure.string/join [
+  (string/join [
     "Mean of movie ratings" "\n"
     (limited-precision (:mean ana-results) 3)
     " (IMDb: " (limited-precision (:imdb-mean ana-results) 3) ")\n"]))
@@ -70,7 +70,7 @@
 (defn view-sd-str
   "String representation for standard deviation of ratings"
   [ana-results]
-  (clojure.string/join [
+  (string/join [
      "Standard deviation of movie ratings" "\n"
      (limited-precision (:stdev ana-results) 3)
      " (IMDb: " (limited-precision (:imdb-stdev ana-results) 3) ")\n"]))
@@ -78,22 +78,22 @@
 (defn view-corr-str
   "String representation for ratings correlation"
   [ana-results]
-  (clojure.string/join [
+  (string/join [
      "Correlation between ratings and IMDb rating averages" "\n"
      (limited-precision (:corr ana-results) 3)]))
 
 (defn view-freq-str
   "String representation for ratings frequencies"
   [ana-results]
-  (clojure.string/join [
+  (string/join [
      "Frequencies of ratings" "\n"
-     (clojure.string/join
+     (string/join
        (map
          (fn [rate]
            (let [freq ((:freq-hash ana-results) rate)
                  imdb-freq ((:imdb-freq-hash ana-results) rate)
                  num (:num ana-results)]
-             (clojure.string/join
+             (string/join
                ["Rate " rate " occurs " freq " times ("
                 (limited-precision (* 100 (/ freq num)) 3) " %) versus IMDb " imdb-freq "\n"])))
          imdb/rates-range))]))
@@ -104,21 +104,21 @@
   (let [entr (limited-precision (:entropy ana-results) 3)
         imdb-entr (limited-precision (:imdb-entropy ana-results) 3)
 		max-entr (limited-precision max-entr 3)]
-    (clojure.string/join [
+    (string/join [
       "Entropy of ratings (in bits)" "\n"
       entr " (in IMDb " imdb-entr "; maximum is " max-entr ")\n"])))
 
 (defn view-directors-str
   "String representation for the best and worst directors"
   [ana-results]
-  (clojure.string/join [
+  (string/join [
     (directors-ranks-strs (take 10 (:dir-ranks ana-results)) "The best directors:") "\n\n"
     (directors-ranks-strs (take-last 10 (:dir-ranks ana-results)) "The worst directors:") "\n"]))
 
 (defn view-results-str
   "String representation of all analysis results"
   [ana-results]
-  (clojure.string/join "\n"
+  (string/join "\n"
     ["-------------------------------------"
      "- IMDb single-list analysis results -"
      "-------------------------------------"

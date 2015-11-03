@@ -21,20 +21,21 @@
 
 (ns imdb-list-analyzer.core
   (:require [imdb-list-analyzer.imdb-data :as imdb]
-            [imdb-list-analyzer.analysis :as ana]
             [imdb-list-analyzer.result-view :as resview]
             [imdb-list-analyzer.dual-result-view :as dualview])
+  (:import (java.io File))
   (:gen-class))
 
 (defn missing-file-err
   "Report into stderr about a missing filename."
   [filename]
-  (.println *err* (str "Cannot find input file: " filename)))
+  (binding [*out* *err*]  ; writing to stderr instead of stdout
+    (println (str "Cannot find input file: " filename))))
 
 (defn file-exists?
   "Does a given filename exist in the filesystem?"
   [filename]
-  (.exists (clojure.java.io/as-file filename)))
+  (.exists ^File (clojure.java.io/as-file filename)))
 
 (defn one-file-analysis
   "Analyze a single IMDb ratings list, in CSV format, given as a filename.
