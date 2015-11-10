@@ -29,7 +29,8 @@
 
 
 (defn find-first
-  "Return the first value in coll for which the predicate returns true."
+  "First value in coll for which the predicate returns true."
   [pred coll]
   (first (filter pred coll)))
+
 
