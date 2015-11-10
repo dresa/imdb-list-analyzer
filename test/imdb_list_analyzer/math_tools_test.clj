@@ -73,7 +73,7 @@
 
 (deftest mean-pos-neg
   (testing "Mean of a list of both positive and negative integers."
-    (is (= (mean [-5 6 7 -8]) 0))))
+    (is (zero? (mean [-5 6 7 -8])))))
 
 (deftest mean-fraction
   (testing "Fraction mean of a list of integers."
@@ -156,7 +156,7 @@
 
 (deftest stdev-int-tol
   (testing "Standard deviation of a list of integers is within a tolerance."
-    (is (< (Math/abs (- (stdev [1 2 -7 19 50]) 22.74863)) 0.00001))))
+    (is (< (Math/abs ^double (- (stdev [1 2 -7 19 50]) 22.74863)) 0.00001))))
 
 (deftest stdev-nan
   (testing "Standard deviation of a list that contains NaN."
