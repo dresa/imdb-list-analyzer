@@ -264,5 +264,82 @@
 
 (deftest smooth-ecdf-2
   (testing "Smooth empirical cumulative probability, within a class."
-    (is (= (smooth-ecdf 8 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10})) (/ (+ 65 (/ 25 2)) 100)))))
+    (is (= (smooth-ecdf 8 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10})) (/ 775 1000)))))
 
+(deftest smooth-ecdf-3
+  (testing "Smooth empirical cumulative probability, within start class."
+    (is (= (smooth-ecdf 5 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10})) (/ 15 100)))))
+
+(deftest smooth-ecdf-4
+  (testing "Smooth empirical cumulative probability, within a truncated start class."
+    (is (zero? (smooth-ecdf 5 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}) true)))))
+
+(deftest smooth-ecdf-5
+  (testing "Smooth empirical cumulative probability, at left-border of a start class."
+    (is (zero? (smooth-ecdf (/ 9 2) (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}))))))
+
+(deftest smooth-ecdf-6
+  (testing "Smooth empirical cumulative probability, before a truncated start class."
+    (is (zero? (smooth-ecdf (/ 9 2) (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}) true)))))
+
+(deftest smooth-ecdf-7
+  (testing "Smooth empirical cumulative probability, at left from a start class."
+    (is (zero? (smooth-ecdf -4 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}))))))
+
+(deftest smooth-ecdf-8
+  (testing "Smooth empirical cumulative probability, left from a truncated start class."
+    (is (zero? (smooth-ecdf -4 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}) true)))))
+
+(deftest smooth-ecdf-9
+  (testing "Smooth empirical cumulative probability, within end class."
+    (is (= (smooth-ecdf 9 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10})) (/ 95 100)))))
+
+(deftest smooth-ecdf-10
+  (testing "Smooth empirical cumulative probability, within a truncated end class."
+    (is (= (smooth-ecdf 9 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}) true) 1))))
+
+(deftest smooth-ecdf-11
+  (testing "Smooth empirical cumulative probability, at right-border of a end class."
+    (is (= (smooth-ecdf (/ 95 10) (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10})) 1))))
+
+(deftest smooth-ecdf-12
+  (testing "Smooth empirical cumulative probability, after a truncated end class."
+    (is (= (smooth-ecdf (/ 95 10) (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}) true) 1))))
+
+(deftest smooth-ecdf-13
+  (testing "Smooth empirical cumulative probability, at right from a end class."
+    (is (= (smooth-ecdf 999 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10})) 1))))
+
+(deftest smooth-ecdf-14
+  (testing "Smooth empirical cumulative probability, right from a truncated end class."
+    (is (= (smooth-ecdf 999 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}) true) 1))))
+
+(deftest smooth-ecdf-15
+  (testing "Smooth empirical cumulative probability, within a class."
+    (is (= (smooth-ecdf (/ 675 100) (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10})) (/ 5 10)))))
+
+(deftest smooth-ecdf-16
+  (testing "Smooth empirical cumulative probability, within a class (truncated ends)."
+    (is (= (smooth-ecdf (/ 675 100) (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}) true) (/ 5 10)))))
+
+(deftest smooth-ecdf-17
+  (testing "Smooth empirical cumulative probability, within first class."
+    (is (= (smooth-ecdf (/ 51 10) (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10})) (/ 18 100)))))
+
+(deftest smooth-ecdf-18
+  (testing "Smooth empirical cumulative probability, within first class (truncated ends)."
+    (is (= (smooth-ecdf (/ 51 10) (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}) true) (/ 6 100)))))
+
+(deftest smooth-ecdf-18
+  (testing "Smooth empirical cumulative probability, selection of points."
+    (is (= (map
+             #(smooth-ecdf % (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}))
+             [-2 0 4 (/ 45 10) (/ 49 10) 5 (/ 52 10) (/ 54 10) (/ 55 10) (/ 56 10) 6 (/ 64 10) (/ 66 10) (/ 69 10) 7 (/ 77 10) 8 (/ 81 10) (/ 849 100) (/ 851 100) (/ 89 10) 9 (/ 94 10) (/ 95 10) (/ 96 10) 777])
+           [0 0 0 0N 3/25 3/20 21/100 27/100 3/10 63/200 3/8 87/200 47/100 53/100 11/20 7/10 31/40 4/5 359/400 901/1000 47/50 19/20 99/100 1N 1N 1N]))))
+
+(deftest smooth-ecdf-19
+  (testing "Smooth empirical cumulative probability, selection of points, with truncated ends."
+    (is (= (map
+             #(smooth-ecdf % (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10}) true)
+             [-2 0 4 (/ 45 10) (/ 49 10) 5 (/ 52 10) (/ 54 10) (/ 55 10) (/ 56 10) 6 (/ 64 10) (/ 66 10) (/ 69 10) 7 (/ 77 10) 8 (/ 81 10) (/ 849 100) (/ 851 100) (/ 89 10) 9 (/ 94 10) (/ 95 10) (/ 96 10) 777])
+           [0 0 0 0 0 0N 3/25 6/25 3/10 63/200 3/8 87/200 47/100 53/100 11/20 7/10 31/40 4/5 359/400 451/500 49/50 1N 1N 1N 1N 1N]))))
