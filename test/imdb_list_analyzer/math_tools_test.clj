@@ -250,11 +250,19 @@
     (is (= (ecdf 123 [5 6 7 8 9] [30 15 20 25 10]) 1))))
 
 
+(deftest old-smooth-ecdf-1
+  (testing "Smooth empirical cumulative probability, at class bound."
+    (is (= (old-smooth-ecdf (/ 17 2) [5 6 7 8 9] [30 15 20 25 10]) (/ 90 100)))))
+
+(deftest old-smooth-ecdf-2
+  (testing "Smooth empirical cumulative probability, within a class."
+    (is (= (old-smooth-ecdf 8 [5 6 7 8 9] [30 15 20 25 10]) (/ (+ 65 (/ 25 2)) 100)))))
+
 (deftest smooth-ecdf-1
   (testing "Smooth empirical cumulative probability, at class bound."
-    (is (= (smooth-ecdf (/ 17 2) [5 6 7 8 9] [30 15 20 25 10]) (/ 90 100)))))
+    (is (= (smooth-ecdf (/ 17 2) (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10})) (/ 90 100)))))
 
 (deftest smooth-ecdf-2
   (testing "Smooth empirical cumulative probability, within a class."
-    (is (= (smooth-ecdf 8 [5 6 7 8 9] [30 15 20 25 10]) (/ (+ 65 (/ 25 2)) 100)))))
+    (is (= (smooth-ecdf 8 (generate-emp-distr {5 30, 6 15, 7 20, 8 25, 9 10})) (/ (+ 65 (/ 25 2)) 100)))))
 
