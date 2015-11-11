@@ -80,10 +80,10 @@
   [ana-results]
   (string/join [
      "Correlation between ratings and IMDb rating averages" "\n"
-     (limited-precision (:corr ana-results) 3)]))
+     (limited-precision (:corr ana-results) 3) "\n"]))
 
 (defn view-freq-str
-  "String representation for ratings frequencies"
+  "String representation for ratings frequencies (vs. IMDb rounded averages)"
   [ana-results]
   (string/join [
      "Frequencies of ratings" "\n"
