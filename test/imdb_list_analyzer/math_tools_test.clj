@@ -207,3 +207,54 @@
 (deftest correlation-int-double-3
   (testing "Pearson correlation of large integers, within a tolerance."
     (is (< (Math/abs (- (correlation [1000000000 -2000000000 1000000000] [500000000 1500000000 -400000000]) -0.8808123)) tol))))
+
+(deftest linear-interp-in-1
+  (testing "Linear interpolation within bounds."
+    (is (= (linear-interp 2 100 12 150 8) 130))))
+
+(deftest linear-interp-in-2
+  (testing "Linear interpolation within bounds, with negatives."
+    (is (= (linear-interp -2 100 12 150 8) (+ 100 (/ 250 7))))))
+
+(deftest linear-interp-in-3
+  (testing "Linear interpolation at the low extreme."
+    (is (= (linear-interp 2 100 12 150 2) 100))))
+
+(deftest linear-interp-in-4
+  (testing "Linear interpolation at the high extreme."
+    (is (= (linear-interp 2 100 12 150 12) 150))))
+
+(deftest linear-interp-out-1
+  (testing "Flat extrapolation at the low end."
+    (is (= (linear-interp 2 100 12 150 -4 :flat) 100))))
+
+(deftest linear-interp-out-2
+  (testing "Flat extrapolation at the high end."
+    (is (= (linear-interp 2 100 12 150 16 :flat) 150))))
+
+(deftest linear-interp-out-3
+  (testing "Linear extrapolation at the low end."
+    (is (= (linear-interp 2 100 12 150 -4 :linear) 70))))
+
+(deftest linear-interp-out-4
+  (testing "Linear extrapolation at the high end."
+    (is (= (linear-interp 2 100 12 150 16 :linear) 170))))
+
+(deftest ecdf-1
+  (testing "Strict empirical cumulative probability, basic calls."
+    (is (= (ecdf 8 [5 6 7 8 9] [30 15 20 25 10]) (/ 90 100)))
+    (is (= (ecdf 5 [5 6 7 8 9] [30 15 20 25 10])) (/ 30 100))
+    (is (zero? (ecdf 4.9 [5 6 7 8 9] [30 15 20 25 10])))
+    (is (zero? (ecdf -9 [5 6 7 8 9] [30 15 20 25 10])))
+    (is (= (ecdf 9 [5 6 7 8 9] [30 15 20 25 10]) 1))
+    (is (= (ecdf 123 [5 6 7 8 9] [30 15 20 25 10]) 1))))
+
+
+(deftest smooth-ecdf-1
+  (testing "Smooth empirical cumulative probability, at class bound."
+    (is (= (smooth-ecdf (/ 17 2) [5 6 7 8 9] [30 15 20 25 10]) (/ 90 100)))))
+
+(deftest smooth-ecdf-2
+  (testing "Smooth empirical cumulative probability, within a class."
+    (is (= (smooth-ecdf 8 [5 6 7 8 9] [30 15 20 25 10]) (/ (+ 65 (/ 25 2)) 100)))))
+
