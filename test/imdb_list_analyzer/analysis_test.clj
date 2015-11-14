@@ -15,12 +15,14 @@
 
 (deftest example-imdb-corr
   (testing "Correlation between rates and IMDb average rates."
-    (is (< (Math/abs ^double (-
-                       (corr-vs-imdb (rest (read-imdb-data "resources/example_ratings_A.csv")))
-                       0.569931605689576))
-           tol))))
+    (is (<
+          (Math/abs ^double
+                    (-
+                      (corr-vs-imdb (rest (read-imdb-file "resources/example_ratings_A.csv")))
+                      0.569931605689576))
+          tol))))
 
 (deftest example-imdb-count
   (testing "Number of ratings."
-    (is (= (rating-num (rest (read-imdb-data "resources/example_ratings_A.csv"))) 1647))))
+    (is (= (rating-num (rest (read-imdb-file "resources/example_ratings_A.csv"))) 1647))))
 
