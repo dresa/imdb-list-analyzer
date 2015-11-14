@@ -10,7 +10,7 @@
   "Remove characters from a string s"
   (apply str (remove #((set chars) %) s)))
 
-(defn parse-imdb-csv-line
+(defn parse-csv-line
   "Parse one line that is in CSV format.
   Args:
     line -- string, CSV line to be parsed
@@ -20,14 +20,15 @@
   Simple call with defaults: (parse-csv-line line)
   "
   ([line]
-   (parse-imdb-csv-line line #"(\",\"|\";\")" "\"" true))  ; default delim: , or ; surrounded by "
+   (parse-csv-line line #"(\",\"|\";\")" "\"" true))  ; default delim: , or ; surrounded by "
   ([line delim-re quote-ch do-trim]
    (let [split #(string/split % delim-re)
          remquotes (if quote-ch #(strip % quote-ch) identity)
          trim (if do-trim string/trim identity)]
      (->> line split (map (comp remquotes trim)) ))))
 
-(defn parse-imdb-csv
-  "Parse CSV string s (IMDb format assumed)"
+(defn parse-csv
+  "Parse CSV string s (IMDb format assumed).
+  Sequence of sequences of strings."
   [s]
-  (map parse-imdb-csv-line (string/split-lines s)))
+  (map parse-csv-line (string/split-lines s)))

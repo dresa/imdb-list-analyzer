@@ -37,30 +37,40 @@
   [filename]
   (.exists ^File (clojure.java.io/as-file filename)))
 
+(defn one-input-analysis
+  "Analyze a single IMDb ratings list, given as a CSV string
+  with headers. Return an AnalysisResult record."
+  [input-data]
+  (resview/compute-results (rest (imdb/parse-imdb-data input-data))))
+
 (defn one-file-analysis
-  "Analyze a single IMDb ratings list, in CSV format, given as a filename.
-  Write the results into stdout. If there is no file matching
-  with given filename, report to stderr."
-  [filename]
-  (if (file-exists? filename)
-    (do
-      (println (str "Analyzing single-list IMDb ratings from " filename))
-      (resview/view-results (resview/compute-results (rest (imdb/read-imdb-data filename)))))
-    (missing-file-err filename)))
+  "Analyze a single IMDb ratings list, in CSV format, given as a filename
+  or a file. Write the results into stdout. If there is no file
+  matching with given file, report to stderr."
+  [file]
+  (if (file-exists? file)
+    (one-input-analysis (imdb/read-raw-data file))
+    (missing-file-err file)))
+
+(defn dual-input-analysis
+  "Analyze two IMDb rating lists. Each input arg refers to
+  a collection of IMDb ratings list data: a sequence of string sequences (CSV).
+  Return an DualAnalysisResult record."
+  [input-data-a input-data-b]
+  (dualview/compute-dual-results
+    (rest (imdb/parse-imdb-data input-data-a))
+    (rest (imdb/parse-imdb-data input-data-b))))
 
 (defn dual-file-analysis
-  "Analyze two IMDb ratings lists, in CSV format, given as filenames.
-  Write the results into stdout. Both filenames must refer to
-  an existing file; if not, report to stderr."
-  [filename-a, filename-b]
+  "Analyze two IMDb rating lists. Each input refers to a file or filename
+  of a CSV-formatted IMDb ratings list. Return an AnalysisResult record."
+  [file-a, file-b]
   (cond
-    (not (file-exists? filename-a)) (missing-file-err filename-a)
-    (not (file-exists? filename-b)) (missing-file-err filename-b)
-    :else
-      (dualview/view-dual-results (
-        dualview/compute-dual-results
-        (rest (imdb/read-imdb-data filename-a))
-        (rest (imdb/read-imdb-data filename-b))))))
+    (not (file-exists? file-a)) (missing-file-err file-a)
+    (not (file-exists? file-b)) (missing-file-err file-b)
+    :else (dual-input-analysis
+            (imdb/read-raw-data file-a)
+            (imdb/read-raw-data file-b))))
 
 (defn print-usage []
   (println
@@ -72,12 +82,13 @@
     "   lein run resources\\example_ratings_A.csv resources\\example_ratings_B.csv"))
 
 (defn -main
-  "Run IMDb analyzer on given IMDb ratings file or files. Read usage and documentation."
+  "Run IMDb analyzer on given IMDb ratings file or files.
+  Show analysis results on-screen. Read usage and documentation."
   [& args]
   ;; work around dangerous default behaviour in Clojure
   (alter-var-root #'*read-eval* (constantly false))
   (case (count args)
     0 (print-usage)
-    1 (one-file-analysis (first args))
-    2 (dual-file-analysis (first args) (second args))
+    1 (resview/view-results (one-file-analysis (File. (first args))))
+    2 (dualview/view-dual-results (dual-file-analysis (first args) (second args)))
     (print-usage)))

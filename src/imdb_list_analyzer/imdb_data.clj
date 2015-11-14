@@ -4,8 +4,7 @@
 ;; 2015-11-01 (originally 2013-06-30)
 
 (ns imdb-list-analyzer.imdb-data
-  (:require [imdb-list-analyzer.simple-csv :as csv]
-            [clojure.java.io :as io])
+  (:require [imdb-list-analyzer.simple-csv :as csv])
   (:import java.nio.charset.Charset
            [java.text ParseException
                       SimpleDateFormat]
@@ -88,20 +87,27 @@
   "Read IMDb ratings data from a CSV strings.
   The result is a lazy sequence of sequences (of fields)."
   [s]
-  (csv/parse-imdb-csv s))
+  (csv/parse-csv s))
 
 (defn read-raw-data
   "Read IMDb ratings data from a CSV-formatted file.
-   The result is a lazy sequence of vectors (of fields)."
-  [filename]
-  (with-open [file (io/reader filename)]
-    (parse-str-data (slurp file :encoding local-encoding))))
+   The 'file' may be a filename, a file, or a reader.
+   The result is a lazy sequence of string vectors (of fields)."
+  [file]
+  (parse-str-data (slurp file :encoding local-encoding)))
 
-(defn read-imdb-data
-  "Parse a sequence of Titles from a CSV filename that contains IMDb ratings data."
-  [filename]
-  (let [data (read-raw-data filename)
-        headers (apply ->Title (first data))  ; preserve column names as strings
+(defn parse-imdb-data
+  "Parse a sequence of Titles from a sequence of IMDb data with a header.
+  The 'data' arg is a sequence where each item is a sequence of strings;
+  in other words it contains rows in an IMDb list with column values."
+  [data]
+  (let [headers (apply ->Title (first data))  ; preserve column names as strings
         lines (rest data)]
-      (conj (map parse-line lines) headers)))  ; attach 'headers' as the first item
+    (conj (map parse-line lines) headers)))  ; parse Titles and attach 'headers' as the first item
+
+(defn read-imdb-file
+  "Parse a sequence of Titles from a CSV file that contains IMDb ratings data.
+  The 'file' may be a filename, a file, or a reader."
+  [file]
+  (parse-imdb-data (read-raw-data file)))
 
