@@ -89,6 +89,6 @@
   (alter-var-root #'*read-eval* (constantly false))
   (case (count args)
     0 (print-usage)
-    1 (resview/view-results (one-file-analysis (File. (first args))))
-    2 (dualview/view-dual-results (dual-file-analysis (first args) (second args)))
+    1 (when-let [res (one-file-analysis (first args))] (resview/view-results res))
+    2 (when-let [res (dual-file-analysis (first args) (second args))] (dualview/view-dual-results res))
     (print-usage)))
