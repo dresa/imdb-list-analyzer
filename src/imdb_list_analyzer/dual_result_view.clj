@@ -2,7 +2,8 @@
 
 (ns imdb-list-analyzer.dual-result-view
   (:require [imdb-list-analyzer.analysis :as ana]
-            [imdb-list-analyzer.result-view :as resview]))
+            [imdb-list-analyzer.result-view :as resview]
+            [cheshire.core :as json]))
 
 "Storage for dual-list analysis results"
 (defrecord DualAnalysisResult [common corr])
@@ -28,3 +29,8 @@
   "Print all dual-list analysis results in human-readable form to standard output."
   [dual-ana-results]
   (println (view-dual-results-str dual-ana-results)))
+
+(defn jsonify-dual-result
+  "JSON string of a DualAnalysisResult."
+  [dual-results]
+  (json/generate-string {"dualresults" dual-results}))

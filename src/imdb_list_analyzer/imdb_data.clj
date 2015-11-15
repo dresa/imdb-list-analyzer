@@ -4,7 +4,8 @@
 ;; 2015-11-01 (originally 2013-06-30)
 
 (ns imdb-list-analyzer.imdb-data
-  (:require [imdb-list-analyzer.simple-csv :as csv])
+  (:require [imdb-list-analyzer.simple-csv :as csv]
+            [cheshire.core :as json])
   (:import java.nio.charset.Charset
            [java.text ParseException
                       SimpleDateFormat]
@@ -111,3 +112,42 @@
   [file]
   (parse-imdb-data (read-raw-data file)))
 
+
+;; JSON-related functions
+;; We use the following JSON format (naming as in exported IMDb files):
+;; {"imdbratings": [{title}, {title}, {title}, ...]}
+;; where each {title} is a map from imdb-column-names to str values.
+
+(def imdb-column-names ["position" "const" "created" "modified" "description"
+                        "Title" "Title type" "Directors" "You rated" "IMDb Rating"
+                        "Runtime (mins)" "Year" "Genres" "Num. Votes"
+                        "Release Date (month/day/year)" "URL"])
+"Column names in CSV files of IMDb ratings; also used as keys in JSON strings."
+
+(defn parse-json-item
+  "Parse a Title from a single map of IMDb data fields for a single movie item."
+  [item-map]
+  (apply ->Title (map #(%1 %2) input-fns (map item-map imdb-column-names))))
+
+(defn parse-imdb-data-from-json-map
+  "Parse Titles from a JSON structure of maps and vectors that contains IMDb ratings."
+  [json-map]
+  (let [headers (apply ->Title imdb-column-names)  ; preserve column names as strings
+        item-coll (get json-map "imdbratings")]
+    (conj (map parse-json-item item-coll) headers)))  ; parse Titles and attach 'headers' as the first item
+
+(defn parse-imdb-data-from-json-str
+  "Parse Titles from a JSON string that contains IMDb ratings."
+  [json-str]
+  (parse-imdb-data-from-json-map (json/parse-string json-str)))
+
+(defn convert-csv-to-json-map
+  "Convert raw CSV data (sequence of string sequences) into
+  a 'JSON' structure of maps and vectors."
+  [csv-data]
+  {"imdbratings" (->> csv-data rest (map #(zipmap imdb-column-names %)))})
+
+(defn convert-csv-to-json-str
+  "Convert raw CSV data (sequence of string sequences) into a JSON string."
+  [csv-data]
+  (json/generate-string (convert-csv-to-json-map csv-data)))

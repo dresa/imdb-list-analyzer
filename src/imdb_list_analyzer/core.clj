@@ -38,10 +38,17 @@
   (.exists ^File (clojure.java.io/as-file filename)))
 
 (defn one-input-analysis
-  "Analyze a single IMDb ratings list, given as a CSV string
-  with headers. Return an AnalysisResult record."
+  "Analyze a single IMDb ratings list, given as a CSV sequence
+  of string sequences, with a header. Return an AnalysisResult record."
   [input-data]
   (resview/compute-results (rest (imdb/parse-imdb-data input-data))))
+
+(defn one-json-input-analysis
+  "Analyze a single IMDb ratings list, given as a JSON string.
+  Return a JSON string of an AnalysisResult record."
+  [json-str]
+  (let [titles-coll (imdb/parse-imdb-data-from-json-str json-str)]
+    (resview/jsonify-single-result (resview/compute-results (rest titles-coll)))))
 
 (defn one-file-analysis
   "Analyze a single IMDb ratings list, in CSV format, given as a filename
@@ -55,11 +62,20 @@
 (defn dual-input-analysis
   "Analyze two IMDb rating lists. Each input arg refers to
   a collection of IMDb ratings list data: a sequence of string sequences (CSV).
-  Return an DualAnalysisResult record."
+  Return a DualAnalysisResult record."
   [input-data-a input-data-b]
   (dualview/compute-dual-results
     (rest (imdb/parse-imdb-data input-data-a))
     (rest (imdb/parse-imdb-data input-data-b))))
+
+(defn dual-json-input-analysis
+  "Analyze two IMDb ratings lists, given as JSON strings.
+  Return a JSON string of a DualAnalysisResult record."
+  [json-str-a json-str-b]
+  (dualview/jsonify-dual-result
+    (dualview/compute-dual-results
+      (rest (imdb/parse-imdb-data-from-json-str json-str-a))
+      (rest (imdb/parse-imdb-data-from-json-str json-str-b)))))
 
 (defn dual-file-analysis
   "Analyze two IMDb rating lists. Each input refers to a file or filename
@@ -89,6 +105,14 @@
   (alter-var-root #'*read-eval* (constantly false))
   (case (count args)
     0 (print-usage)
-    1 (when-let [res (one-file-analysis (first args))] (resview/view-results res))
-    2 (when-let [res (dual-file-analysis (first args) (second args))] (dualview/view-dual-results res))
+    1 (when-let [res (one-file-analysis (first args))]
+        (do
+          (resview/view-results res)
+          (print (one-json-input-analysis (imdb/convert-csv-to-json-str (imdb/read-raw-data (first args)))))))
+    2 (when-let [res (dual-file-analysis (first args) (second args))]
+        (do
+          (dualview/view-dual-results res)
+          (print (dual-json-input-analysis
+                   (imdb/convert-csv-to-json-str (imdb/read-raw-data (first args)))
+                   (imdb/convert-csv-to-json-str (imdb/read-raw-data (second args)))))))
     (print-usage)))
