@@ -3,7 +3,8 @@
 (ns imdb-list-analyzer.result-view
   (:require [clojure.string :as string]
             [imdb-list-analyzer.analysis :as ana]
-            [imdb-list-analyzer.imdb-data :as imdb])
+            [imdb-list-analyzer.imdb-data :as imdb]
+            [cheshire.core :as json])
   (:import (java.util Locale)))
 
 "Collection of all analysis results"
@@ -135,3 +136,7 @@
   [ana-result]
   (println (view-results-str ana-result)))
 
+(defn jsonify-single-result
+  "JSON string of an AnalysisResult."
+  [single-results]
+  (json/generate-string {"singleresults" single-results}))
