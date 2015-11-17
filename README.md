@@ -4,6 +4,9 @@ Internet Movie Database, or IMDb for short, offers a massive amount of informati
 
 `imdb-list-analyzer` provides tools analyzing IMDb movie ratings, and personal ratings in particular.
 
+## Demo application
+
+TODO
 
 ## Installation
 The software is implemented in Clojure. It currently requires:
@@ -21,6 +24,8 @@ Installation guide:
 
 
 ## Usage
+
+### From command line
 
 For the time being, only a command-line program is available.
 
@@ -41,6 +46,13 @@ Functionality:
 
 If Leiningen is not available, launch the main program `core.clj` instead with an ordinary combination of `java` and `clojure.jar`. Add the command-line parameters as usual.
 
+### Web GUI
+
+    $ lein with-profile production ring server
+
+Open http://localhost:3000/ in browser and follow instructions.
+
+If you don't have an IMDB account you can use the example files from 'resources/'.
 
 ## Input files
 
