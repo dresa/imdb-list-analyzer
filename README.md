@@ -6,7 +6,9 @@ Internet Movie Database, or IMDb for short, offers a massive amount of informati
 
 ## Demo application
 
-TODO
+https://evening-basin-4521.herokuapp.com/
+
+Development version, only returns raw JSON results.
 
 ## Installation
 The software is implemented in Clojure. It currently requires:
@@ -53,6 +55,8 @@ If Leiningen is not available, launch the main program `core.clj` instead with a
 Open http://localhost:3000/ in browser and follow instructions.
 
 If you don't have an IMDB account you can use the example files from 'resources/'.
+
+Note that the Web GUI is still in development and only returns raw JSON results.
 
 ## Input files
 
