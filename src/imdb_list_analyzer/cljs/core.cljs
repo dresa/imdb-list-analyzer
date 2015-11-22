@@ -1,59 +1,100 @@
-(ns imdb-list-analyzer.cljs.core
-  (:require [goog.dom :as gdom]
-            [om.next :as om :refer-macros [defui]]
-            [om.dom :as dom]
-            [ajax.core :refer [GET POST]]))
+(ns ^:figwheel-always imdb-list-analyzer.cljs.core
+  (:require
+    [reagent.core :as r]
+    [ajax.core :refer [GET POST]]))
 
 (enable-console-print!)
 
 (println "Hello world!")
 
-(defn handler [response]
-  (println (str response)))
+(defonce app-state (r/atom {}))
 
-(defui analysis-form
-       Object
-       (render [this]
-               (dom/div nil
-                 (dom/form #js
-                         {:encType "multipart/form-data"
-                          :method "post"
-                          :name "csv-form"
-                          :id "csv-form"}
-                   (dom/h3 nil "Dev functionality, see results in browser's console")
-                   (dom/input #js {:type "file" :name "csv"
-                                   :id "csv-input" :accept ".csv"
-                                   :required true})
-                   (dom/input #js {:type "button"
-                                   :value "Analyze file"
-                                   :onClick #(POST "/analyze"
-                                                   {:body (js/FormData.
-                                                              (.getElementById js/document "csv-form"))
+(defonce test-conn (r/atom ""))
 
-                                                    :handler handler})})
-                   ;"TODO"
-                   #_(dom/input #js {:type "button"
-                             :value "Show sample results!"
-                             :onClick #(POST "/sample"
-                                             {:body "needed?"
-                                              :handler handler})})
-                   (dom/input #js {:type "button"
-                             :value "Hello (test connection)"
-                             :onClick #(POST "/hello"
-                                             {:body true
-                                              :handler handler})}))
-                  (dom/div nil
-                    (dom/h4 nil "Anyone with an IMDb account can retrieve their own ratings file as follows:")
-                    (dom/ol nil
-                          (dom/li nil "Login to www.imdb.com with you account.")
-                          (dom/li nil "Search for a personal \"Your Ratings\" view that contains all your rated movies.")
-                          (dom/li nil "Click \"Export this list\" at the bottom of the page.")
-                          (dom/li nil "Save file into the filesystem.")
-                          (dom/li nil "Use 'Choose file' & 'Analyze file' buttons to analyze your ratings"))))))
+(defn result-handler [response]
+  (do
+    (println (-> response JSON/parse (js->clj :keywordize-keys true)))
+    (swap! app-state assoc (-> response JSON/parse (js->clj :keywordize-keys true)))))
 
+(defn test-handler [response]
+  (do
+    (println (str response))
+    (reset! test-conn (str response))))
 
-(def input (om/factory analysis-form))
+(defn inst-component []
+  [:div
+   [:h2 "IMDB list analyzer"]])
 
-(js/ReactDOM.render
-  (input)
-  (gdom/getElement "app"))
+(defn form-component []
+  [:div.container
+   [:form {:encType "multipart/form-data"
+           :method "post"
+           :name "csv-form"
+           :id "csv-form"}
+    [:input {:class "btn btn-default btn-file"
+             :type "file" :name "csv"
+             :id "csv-input" :accept ".csv"
+             :required true}]
+    [:br]
+    [:input  {:class "btn btn-primary"
+              :type "button"
+              :value "Analyze file"
+              :onClick #(POST "/analyze"
+                              {:body (js/FormData.
+                                       (.getElementById js/document "csv-form"))
+
+                               :handler result-handler})}]
+    [:br]
+    [:br]
+    [:input {:class "btn btn-default"
+             :type "button"
+             :value "Hello (test connection)"
+             :onClick #(POST "/hello"
+                             {:body true
+                              :handler test-handler})}]
+    [:br]
+    [:br]
+    [:p (str @test-conn)]]])
+
+(defn result-component []
+  (let [results (first (first @app-state))
+        single-results (:singleresults results)]
+    [:div.container
+     [:h3 "IMDB single-list analysis results"]
+
+      [:table.table
+       [:thead
+        [:tr
+         [:th "Metric"]
+         [:th "Result"]
+         [:th "IMDB Average"]]
+        [:tbody
+         [:tr
+          [:td "Number of movie ratings"]
+          [:td (str (:num single-results))]
+          [:td ""]]
+         [:tr
+          [:td "Mean of movie ratings"]
+          [:td (str (:mean single-results))]
+          [:td (str (:imdb-mean single-results))]]
+         [:tr
+          [:td "Standard deviation of movie ratings"]
+          [:td (str (:stdev single-results))]
+          [:td (str (:imdb-stdev single-results))]]
+         [:tr
+          [:td "Correlation between ratings and IMDb rating averages"]
+          [:td (str (:corr single-results))]
+          [:td ""]
+          ]]]]
+     [:p (str "RAW DEV")
+     [:p (str results)]]]))
+
+(defn root-component []
+  [:div.container
+    [inst-component]
+    [form-component]
+    [result-component]])
+
+(defn ^:export run []
+  (r/render [root-component]
+            (.getElementById js/document "app")))

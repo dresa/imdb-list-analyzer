@@ -11,15 +11,15 @@
 (defn handle-hello-req []
   (do
     (println "hello req succes!")
-    ;Response to server
-    (str "Hello!")))
+    ;Response
+    (str "Hello from the server-side!")))
 
 (defn handle-csv-req [request]
   (do
     (println "csv req success!")
     (println request)
-    (println (core/one-file-analysis (:tempfile (:csv (:params request)))))
-    ;Response to server
+    ;(println (core/one-file-analysis (:tempfile (:csv (:params request)))))
+    ;Response
     (resview/jsonify-single-result
       (core/one-file-analysis (:tempfile (:csv (:params request)))))))
 

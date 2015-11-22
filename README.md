@@ -10,7 +10,7 @@ https://evening-basin-4521.herokuapp.com/
 
 Development version, only returns raw JSON results.
 
-## Installation
+## Installat    ion
 The software is implemented in Clojure. It currently requires:
 
 * Clojure 1.5.1 or newer

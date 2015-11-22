@@ -5,9 +5,11 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [cheshire "5.5.0"]
-                 [org.clojure/clojurescript "1.7.145"]
-                 [org.omcljs/om "1.0.0-alpha14"]
-                 [figwheel-sidecar "0.4.0" :scope "provided"]
+                 [org.clojure/clojurescript "1.7.170"]
+                 [com.cognitect/transit-cljs "0.8.232"]     ;JSON reader for clojurescript
+                 ;[org.omcljs/om "1.0.0-alpha14"]
+                 [reagent "0.5.1"]
+                 [figwheel-sidecar "0.5.0-SNAPSHOT" :scope "provided"]
                  [compojure "1.4.0"]
                  [ring/ring-core "1.4.0"]
                  [ring/ring-jetty-adapter "1.4.0"]
