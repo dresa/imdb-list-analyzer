@@ -13,8 +13,8 @@
 
 (defn result-handler [response]
   (do
-    (println (-> response JSON/parse (js->clj :keywordize-keys true)))
-    (swap! app-state assoc (-> response JSON/parse (js->clj :keywordize-keys true)))))
+    (println (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))
+    (swap! app-state assoc (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))))
 
 (defn test-handler [response]
   (do
