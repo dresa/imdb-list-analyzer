@@ -10,6 +10,7 @@
                  [figwheel-sidecar "0.5.0-SNAPSHOT" :scope "provided"]
                  [compojure "1.4.0"]
                  [ring/ring-core "1.4.0"]
+                 [ring/ring-jetty-adapter "1.4.0"]
                  [cljs-ajax "0.5.1"]]
 
   :plugins       [[lein-ring "0.9.7"]
