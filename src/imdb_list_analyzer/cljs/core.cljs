@@ -30,11 +30,20 @@
     (reset! test-conn (str response))))
 
 (defn inst-component []
-  [:div
-   [:h2 "IMDB list analyzer"]])
+  [:div.container
+   [:h2 "IMDB list analyzer"]
+   [:br]
+   [:div
+      [:h4 "Anyone with an IMDb account can retrieve their own ratings file as follows:"]
+        [:li "Login to www.imdb.com with you account."]
+        [:li "Search for a personal \"Your Ratings\" view that contains all your rated movies."]
+        [:li "Click \"Export this list\" at the bottom of the page."]
+        [:li "Save file into the filesystem."]
+        [:li "Use 'Choose file' & 'Analyze file' buttons to analyze your ratings"]]])
 
 (defn form-component []
   [:div.container
+   [:h3 "Load your ratings:"]
    [:form {:encType "multipart/form-data"
            :method "post"
            :name "csv-form"
