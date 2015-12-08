@@ -7,11 +7,11 @@
 
 (enable-console-print!)
 
-(println "Hello world!")
-
 (defonce app-state (r/atom {}))
 
-(defonce test-conn (r/atom ""))
+(defonce dom-state (r/atom {:loading false
+                            :error nil
+                            :file nil}))
 
 (defn round-num [num precision]
   (if (nil? num)
@@ -22,12 +22,13 @@
 (defn result-handler [response]
   (do
     (println (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))
-    (swap! app-state assoc (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))))
+    (swap! app-state assoc (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))
+    (swap! dom-state assoc :loading false)))
 
-(defn test-handler [response]
+(defn error-handler [{:keys [status status-text]}]
   (do
-    (println (str response))
-    (reset! test-conn (str response))))
+    (swap! dom-state assoc :error (str status " " status-text ". Is the file a valid imdb csv-file?"))
+    (swap! dom-state assoc :loading false)))
 
 (defn inst-component []
   [:div.container
@@ -51,27 +52,30 @@
     [:input {:class "btn btn-default btn-file"
              :type "file" :name "csv"
              :id "csv-input" :accept ".csv"
-             :required true}]
+             ;:value @file
+             :on-change
+              #(swap! dom-state assoc :file (.-name (aget (.-files (.getElementById js/document "csv-input")) 0)))}]
     [:br]
-    [:input  {:class "btn btn-primary"
+    [:div {:class "inline"}
+     [:input  {:class "btn btn-primary"
               :type "button"
               :value "Analyze file"
-              :onClick #(POST "/analyze"
+              :disabled (or
+                          (:loading @dom-state)
+                          (nil? (:file @dom-state)))
+              :onClick #(do
+                         (swap! dom-state assoc :loading true)
+                         (swap! dom-state assoc :error nil)
+                         (POST "/analyze"
                               {:body (js/FormData.
                                        (.getElementById js/document "csv-form"))
 
-                               :handler result-handler})}]
-    [:br]
-    [:br]
-    [:input {:class "btn btn-default"
-             :type "button"
-             :value "Hello (test connection)"
-             :onClick #(POST "/hello"
-                             {:body true
-                              :handler test-handler})}]
-    [:br]
-    [:br]
-    [:p (str @test-conn)]]])
+                               :handler result-handler
+                               :error-handler error-handler}))}]
+       [:div.loading {:hidden (not (:loading @dom-state))}
+        [:i {:class "fa fa-cog fa-spin fa-4x"}]]]]
+   [:div {:class "container"}
+    [:h4 (:error @dom-state)]]])
 
 (defn result-component []
   (let [results (first (first @app-state))
@@ -80,7 +84,7 @@
         imdb-freqs (:imdb-freq-hash single-results)
         best-dirs (take 10 (:dir-ranks single-results))
         worst-dirs (take-last 10 (:dir-ranks single-results))]
-    [:div.container
+    [:div.container {:id "results-elem"}
      [:h3 "IMDB single-list analysis results"]
       [:table.table
        [:thead
