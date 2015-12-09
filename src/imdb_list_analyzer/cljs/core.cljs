@@ -18,6 +18,9 @@
     num
     (gstring/format (str "%." precision "f") num)))
 
+(defn map-keywords-to-int [m]
+  (reduce #(assoc %1 (-> %2 key name int) (val %2)) {} m))
+
 (defn result-handler [response]
   (do
     (println (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))
@@ -90,8 +93,8 @@
 (defn result-component []
   (let [results @app-state
         single-results (:singleresults results)
-        freqs (:freq-hash single-results)
-        imdb-freqs (:imdb-freq-hash single-results)
+        freqs (map-keywords-to-int (:freq-hash single-results))
+        imdb-freqs (map-keywords-to-int (:imdb-freq-hash single-results))
         best-dirs (take 10 (:dir-ranks single-results))
         worst-dirs (take-last 10 (:dir-ranks single-results))]
     [:div.container {:id "results-elem"
@@ -136,7 +139,7 @@
            [:td (str (key freq))]
            [:td (val freq)]
            [:td (str (round-num (* 100 (/ (val freq) (:num single-results))) 2) " %")]
-           [:td ((key freq) imdb-freqs)]])]]
+           [:td (get imdb-freqs (key freq))]])]]
 
       [:h3 "The best directors"]
       [:table.table
