@@ -94,7 +94,8 @@
         imdb-freqs (:imdb-freq-hash single-results)
         best-dirs (take 10 (:dir-ranks single-results))
         worst-dirs (take-last 10 (:dir-ranks single-results))]
-    [:div.container {:id "results-elem"}
+    [:div.container {:id "results-elem"
+                     :hidden (nil? results)}
      [:h3 "IMDB single-list analysis results"]
       [:table.table
        [:thead
