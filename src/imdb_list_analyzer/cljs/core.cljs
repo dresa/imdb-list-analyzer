@@ -7,7 +7,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (r/atom {}))
+(defonce app-state (r/atom nil))
 
 (defonce dom-state (r/atom {:loading false
                             :error nil
@@ -18,11 +18,10 @@
     num
     (gstring/format (str "%." precision "f") num)))
 
-;TODO error handler
 (defn result-handler [response]
   (do
     (println (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))
-    (swap! app-state assoc (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))
+    (reset! app-state (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))
     (swap! dom-state assoc :loading false)))
 
 (defn error-handler [{:keys [status status-text]}]
@@ -89,7 +88,7 @@
     [:h4 (:error @dom-state)]]])
 
 (defn result-component []
-  (let [results (first (first @app-state))
+  (let [results @app-state
         single-results (:singleresults results)
         freqs (:freq-hash single-results)
         imdb-freqs (:imdb-freq-hash single-results)
