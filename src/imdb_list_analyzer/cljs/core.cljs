@@ -69,9 +69,20 @@
                          (POST "/analyze"
                               {:body (js/FormData.
                                        (.getElementById js/document "csv-form"))
-
                                :handler result-handler
                                :error-handler error-handler}))}]
+     [:br]
+     [:br]
+     [:input  {:class "btn btn-default"
+               :type "button"
+               :value "Show example results"
+               :disabled (:loading @dom-state)
+               :onClick #(do
+                          (swap! dom-state assoc :loading true)
+                          (swap! dom-state assoc :error nil)
+                          (POST "/analyze-example"
+                                {:handler result-handler
+                                 :error-handler error-handler}))}]
        [:div.loading {:hidden (not (:loading @dom-state))}
         [:i {:class "fa fa-cog fa-spin fa-4x"}]]]]
    [:div {:class "container"}
