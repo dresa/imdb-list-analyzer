@@ -21,16 +21,47 @@
 (defn map-keywords-to-int [m]
   (reduce #(assoc %1 (-> %2 key name int) (val %2)) {} m))
 
+(defn map-to-pair-data [m]
+  (reduce #(conj %1 {:x (key %2) :y (val %2)}) [] m))
+
+(defn make-histogram []
+  (when @app-state
+    (.addGraph js/nv (fn []
+                       (let [chart (.. js/nv -models multiBarChart)]
+                         (.. chart -xAxis
+                             (tickFormat (.format js/d3 ",f"))
+                             (axisLabel "Rating"))
+                         (.. chart -yAxis
+                             (tickFormat (.format js/d3 ",f"))
+                             (axisLabel "Frequency"))
+                         (let [results @app-state
+                               single-results (:singleresults results)
+                               freqs (map-keywords-to-int (:freq-hash single-results))
+                               imdb-freqs (map-keywords-to-int (:imdb-freq-hash single-results))
+                               pair-freqs (map-to-pair-data freqs)
+                               imdb-pair-freqs (map-to-pair-data imdb-freqs)]
+                           (.. js/d3 (select "#barchart svg")
+                               (datum (clj->js [{:values pair-freqs
+                                                 :key "your frequency"}
+                                                {:values imdb-pair-freqs
+                                                 :key "imdb frequency"}]))
+                               (call chart))))))))
+
 (defn result-handler [response]
-  (do
+    (do
     (println (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))
     (reset! app-state (-> response (js/JSON.parse) (js->clj :keywordize-keys true)))
-    (swap! dom-state assoc :loading false)))
+    (swap! dom-state assoc :loading false)
+    (make-histogram)))
 
 (defn error-handler [{:keys [status status-text]}]
   (do
     (swap! dom-state assoc :error (str status " " status-text ". Is the file a valid imdb csv-file?"))
     (swap! dom-state assoc :loading false)))
+
+(defn histogram-component []
+  [:div {:id "barchart" :style {:width 700 :height 400}}
+   [:svg]])
 
 (defn inst-component []
   [:div.container
@@ -125,7 +156,9 @@
           [:td ""]]]]]
 
       [:h3 "Frequencies of ratings"]
-      [:table.table
+      [histogram-component]
+     ;Replaced by the graph
+     #_[:table.table
        [:thead
         [:tr
          [:th "Rate"]
@@ -185,6 +218,7 @@
   [:div.container
     [inst-component]
     [form-component]
+   ;[histogram-component]
     [result-component]])
 
 (defn ^:export run []
