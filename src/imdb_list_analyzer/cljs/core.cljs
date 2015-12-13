@@ -157,6 +157,12 @@
 
       [:h3 "Frequencies of ratings"]
       [histogram-component]
+
+     ;Button to re-render the histogram, as the graph is sometimes bugged on first load
+      [:button {:class  "btn btn-default"
+                :onClick #(make-histogram)}
+       "Re-render graph"]
+     
      ;Replaced by the graph
      #_[:table.table
        [:thead
