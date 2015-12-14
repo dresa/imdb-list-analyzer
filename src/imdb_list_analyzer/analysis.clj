@@ -69,6 +69,8 @@
     (zipmap imdb/rates-range (repeat (count imdb/rates-range) 0))  ; defaults
     (frequencies (map #(Math/round ^double (:imdb-rate %)) titles-coll))))  ; actual nonzero frequencies
 
+;; Director rankings
+
 (defn- rating-directors
   "Mapping that connects each director to all ratings on
   his/her movies, restricting to given titles and list-ratings"
@@ -117,6 +119,30 @@
   Best directors first (high p-values)."
   [titles-coll]
   (reverse (sort-by second (director-rank titles-coll))))
+
+
+;; Rating discrepancies
+
+(defn rating-discrepancy
+  "Compute quantile-based differences between my ratings and IMDb averages."
+  [titles-coll]
+  (let [[my-rates imdb-rates] (map #(map % titles-coll) [:rate :imdb-rate])
+        to-distr #(mtools/generate-emp-distr (frequencies %))
+        [my-distr imdb-distr] (map to-distr [my-rates imdb-rates])
+        to-cumu-map (fn [distr] (zipmap (:points distr) (rest (:cumu-probs distr))))
+        ;[my-cumu imdb-cumu] (map #(to-cumu-map %) [my-distr imdb-distr])
+        ;my-quantiles (map #(get my-cumu %) my-rates)
+        my-quantiles (map #(mtools/smooth-ecdf % my-distr) my-rates)
+        ;imdb-quantiles (map #(mtools/smooth-ecdf % imdb-distr) imdb-rates)
+        imdb-cumu (to-cumu-map imdb-distr)
+        imdb-quantiles (map #(get imdb-cumu %) imdb-rates)
+        discrepancy (map - my-quantiles imdb-quantiles)]
+    (reverse (sort-by
+               :discrepancy
+               (for [[t d] (map vector titles-coll discrepancy)]
+                 (zipmap
+                   [:title :rate :imdb-rate :discrepancy]
+                   [(:title t) (:rate t) (:imdb-rate t) d]))))))
 
 
 ;; Dual-list analysis functions
