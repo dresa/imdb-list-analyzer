@@ -114,8 +114,8 @@
   "String representation for the best and worst directors"
   [ana-results]
   (string/join [
-    (directors-ranks-strs (take 10 (:dir-ranks ana-results)) "The best directors:") "\n\n"
-    (directors-ranks-strs (take-last 10 (:dir-ranks ana-results)) "The worst directors:") "\n"]))
+    (directors-ranks-strs (take 20 (:dir-ranks ana-results)) "The best directors:") "\n\n"
+    (directors-ranks-strs (take-last 20 (:dir-ranks ana-results)) "The worst directors:") "\n"]))
 
 (defn disc-str
   "String representation of a single discrepancy result, along with ratings and p-value diff"
@@ -138,10 +138,10 @@
   "String representation for the largest discrepancies between ratings and IMDb averages."
   [ana-results]
   (string/join "\n" ["Surprising likes: Title; Rate; IMDb average; Diff in p-value"
-                    (discrepancy-strs (take 30 (:discrepancy ana-results)))
+                    (discrepancy-strs (take 20 (:discrepancy ana-results)))
                     ""
                     "Surprising dislikes: Title; Rate; IMDb average; Diff in p-value"
-                    (discrepancy-strs (take-last 30 (:discrepancy ana-results)))]))
+                    (discrepancy-strs (take-last 20 (:discrepancy ana-results)))]))
 
 (defn view-results-str
   "String representation of all analysis results"

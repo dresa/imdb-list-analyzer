@@ -71,6 +71,12 @@
 
 ;; Director rankings
 
+"Number of random samples in a statistical test"
+(def num-samples 1000)
+
+"Random seed for generating random numbers that can be replicated"
+(def random-seed 1)
+
 (defn- rating-directors
   "Mapping that connects each director to all ratings on
   his/her movies, restricting to given titles and list-ratings"
@@ -80,11 +86,8 @@
 
 (defn- sample-null-ref-value
   "Compute sample mean from an empirical distribution, using in total num-values samples"
-  [num-values emp-distr]
-  (mtools/mean (take num-values (mtools/sample-distr emp-distr))))
-
- "Number of random samples in a statistical test"
-(def ^:private num-samples 1000)  ; FIXME: should recycle samples instead of regenerating
+  [emp-distr randoms]
+  (mtools/mean (mtools/sample-distr emp-distr randoms)))
 
 (defn- compute-reference-value
   "Compute a statistical p-value for a director, given the following arguments:
@@ -95,24 +98,43 @@
   p-value is to 1.0, the better the director is compared to other directors; p-values
   close to 0.0 indicate that the director performs poorly.
   "
-  [rates emp-distr]
+  [rates emp-distr samples-by-size]
   (let [mu (mtools/mean rates)
         num (count rates)
-        distr-mu (:empirical-mean emp-distr)  ; empirical mean represents an average director
-        samples (take num-samples (repeatedly #(sample-null-ref-value num emp-distr)))]
+        distr-mu (:mean emp-distr)  ; empirical mean represents an average director
+        samples (get samples-by-size num)]
     (/ (count (filter #(if (<= distr-mu mu) (< % mu) (<= % mu)) samples)) (count samples))))
 
 (defn- director-empirical-rank
   "Compute a statistical p-value for each director (quality measure)"
-  [director-rate-lists emp-distr]
-  (map #(compute-reference-value % emp-distr) director-rate-lists))
+  [director-rate-lists emp-distr samples-by-size]
+  (map #(compute-reference-value % emp-distr samples-by-size) director-rate-lists))
 
 (defn- director-rank
-  "Compute a mapping from directors to their quality measure (statistical p-value)"
+  "Compute a mapping from directors to their quality measure (statistical p-value).
+  This implementation pre-computes samples for each size of a director's ratings
+  basket, perhaps ranging from 1 to 15. These samples are then compared to
+  rating averages."
   [titles-coll]
   (let [dirs (rating-directors titles-coll)
-        emp-distr (mtools/gen-emp-distr (map :rate titles-coll))]
-    (map vector dirs (director-empirical-rank (map second dirs) emp-distr))))
+        emp-distr (mtools/generate-emp-distr (frequencies (map :rate titles-coll)))
+        max-dir-rates (apply max (map count (vals dirs)))
+        rnd-count (* num-samples max-dir-rates)
+        randoms (seq (take rnd-count (mtools/rnd-gen random-seed)))
+        size-range (range 1 (inc max-dir-rates))
+        ; rate basket size --> random sample average on ratings:
+        samples-by-size (zipmap
+                          size-range
+                          (for [s size-range]
+                            (map
+                              #(sample-null-ref-value emp-distr %)
+                              (take num-samples (partition-all s randoms)))))]
+    (map vector
+         dirs
+         (director-empirical-rank
+           (map second dirs)
+           emp-distr
+           samples-by-size))))
 
 (defn director-qualities
   "Compute a list of directors, sorted by their quality parameters (statistical p-values).
@@ -130,10 +152,7 @@
         to-distr #(mtools/generate-emp-distr (frequencies %))
         [my-distr imdb-distr] (map to-distr [my-rates imdb-rates])
         to-cumu-map (fn [distr] (zipmap (:points distr) (rest (:cumu-probs distr))))
-        ;[my-cumu imdb-cumu] (map #(to-cumu-map %) [my-distr imdb-distr])
-        ;my-quantiles (map #(get my-cumu %) my-rates)
-        my-quantiles (map #(mtools/smooth-ecdf % my-distr) my-rates)
-        ;imdb-quantiles (map #(mtools/smooth-ecdf % imdb-distr) imdb-rates)
+        my-quantiles (map #(mtools/smooth-ecdf % my-distr) my-rates)  ; approx. half-integers
         imdb-cumu (to-cumu-map imdb-distr)
         imdb-quantiles (map #(get imdb-cumu %) imdb-rates)
         discrepancy (map - my-quantiles imdb-quantiles)]
