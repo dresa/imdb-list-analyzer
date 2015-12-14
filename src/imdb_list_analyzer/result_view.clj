@@ -24,7 +24,8 @@
      :imdb-freq-hash (ana/imdb-frequencies titles-coll)
      :entropy (ana/rating-entropy titles-coll)
      :imdb-entropy (ana/imdb-entropy titles-coll)
-     :dir-ranks (ana/director-qualities titles-coll)}))
+     :dir-ranks (ana/director-qualities titles-coll)
+     :discrepancy (ana/rating-discrepancy titles-coll)}))
 
 "Maximum Shannon information entropy, given the rating scale"
 (def max-entr (ana/max-entropy (count imdb/rates-range)))
@@ -116,6 +117,32 @@
     (directors-ranks-strs (take 10 (:dir-ranks ana-results)) "The best directors:") "\n\n"
     (directors-ranks-strs (take-last 10 (:dir-ranks ana-results)) "The worst directors:") "\n"]))
 
+(defn disc-str
+  "String representation of a single discrepancy result, along with ratings and p-value diff"
+  [title rate imdb-rate discrepancy]
+  (format
+    "%-36s; %-3s; %-4s; %s"
+    (if (<= (count title) 36) title (subs title 0 36))
+    (str rate)
+    (str imdb-rate)
+    (limited-precision discrepancy 3)))
+
+(defn discrepancy-strs
+  "String representation of a set of discrepancy results."
+  [discr-map]
+  (string/join
+    "\n"
+    (for [dm discr-map] (disc-str (:title dm) (:rate dm) (:imdb-rate dm) (:discrepancy dm)))))
+
+(defn view-discrepancy-str
+  "String representation for the largest discrepancies between ratings and IMDb averages."
+  [ana-results]
+  (string/join "\n" ["Surprising likes: Title; Rate; IMDb average; Diff in p-value"
+                    (discrepancy-strs (take 30 (:discrepancy ana-results)))
+                    ""
+                    "Surprising dislikes: Title; Rate; IMDb average; Diff in p-value"
+                    (discrepancy-strs (take-last 30 (:discrepancy ana-results)))]))
+
 (defn view-results-str
   "String representation of all analysis results"
   [ana-results]
@@ -129,7 +156,8 @@
      (view-corr-str ana-results)
      (view-freq-str ana-results)
      (view-entropy-str ana-results)
-     (view-directors-str ana-results)]))
+     (view-directors-str ana-results)
+     (view-discrepancy-str ana-results)]))
 
 (defn view-results
   "Print all single-list analysis results in human-readable form to standard output."
