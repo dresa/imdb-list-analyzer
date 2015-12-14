@@ -71,6 +71,12 @@
 
 ;; Director rankings
 
+"Number of random samples in a statistical test"
+(def num-samples 10000)  ; FIXME: should recycle samples instead of regenerating
+
+"Number of random samples in a statistical test"
+(def random-seed 1)
+
 (defn- rating-directors
   "Mapping that connects each director to all ratings on
   his/her movies, restricting to given titles and list-ratings"
@@ -80,11 +86,8 @@
 
 (defn- sample-null-ref-value
   "Compute sample mean from an empirical distribution, using in total num-values samples"
-  [num-values emp-distr]
-  (mtools/mean (take num-values (mtools/sample-distr emp-distr))))
-
- "Number of random samples in a statistical test"
-(def ^:private num-samples 1000)  ; FIXME: should recycle samples instead of regenerating
+  [emp-distr randoms]
+  (mtools/mean (mtools/sample-distr emp-distr randoms)))
 
 (defn- compute-reference-value
   "Compute a statistical p-value for a director, given the following arguments:
@@ -95,24 +98,34 @@
   p-value is to 1.0, the better the director is compared to other directors; p-values
   close to 0.0 indicate that the director performs poorly.
   "
-  [rates emp-distr]
+  [rates emp-distr randoms]
   (let [mu (mtools/mean rates)
         num (count rates)
-        distr-mu (:empirical-mean emp-distr)  ; empirical mean represents an average director
-        samples (take num-samples (repeatedly #(sample-null-ref-value num emp-distr)))]
+        distr-mu (:mean emp-distr)  ; empirical mean represents an average director
+        random-chuncks (take num-samples (partition-all num randoms))
+        samples (map #(sample-null-ref-value emp-distr %) random-chuncks)]
     (/ (count (filter #(if (<= distr-mu mu) (< % mu) (<= % mu)) samples)) (count samples))))
 
 (defn- director-empirical-rank
   "Compute a statistical p-value for each director (quality measure)"
-  [director-rate-lists emp-distr]
-  (map #(compute-reference-value % emp-distr) director-rate-lists))
+  [director-rate-lists emp-distr randoms]
+  (map #(compute-reference-value % emp-distr randoms) director-rate-lists))
 
 (defn- director-rank
   "Compute a mapping from directors to their quality measure (statistical p-value)"
   [titles-coll]
   (let [dirs (rating-directors titles-coll)
-        emp-distr (mtools/gen-emp-distr (map :rate titles-coll))]
-    (map vector dirs (director-empirical-rank (map second dirs) emp-distr))))
+        emp-distr (mtools/generate-emp-distr (frequencies (map :rate titles-coll)))
+        rnd-count (* num-samples (apply max (map count (vals dirs))))
+        randoms (seq (take rnd-count (mtools/rnd-gen random-seed)))]
+    (map vector
+         dirs
+         (director-empirical-rank
+           (map second dirs)
+           emp-distr
+           randoms))))
+
+;; New director rankings
 
 (defn director-qualities
   "Compute a list of directors, sorted by their quality parameters (statistical p-values).

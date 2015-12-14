@@ -138,10 +138,10 @@
   "String representation for the largest discrepancies between ratings and IMDb averages."
   [ana-results]
   (string/join "\n" ["Surprising likes: Title; Rate; IMDb average; Diff in p-value"
-                    (discrepancy-strs (take 30 (:discrepancy ana-results)))
+                    (discrepancy-strs (take 20 (:discrepancy ana-results)))
                     ""
                     "Surprising dislikes: Title; Rate; IMDb average; Diff in p-value"
-                    (discrepancy-strs (take-last 30 (:discrepancy ana-results)))]))
+                    (discrepancy-strs (take-last 20 (:discrepancy ana-results)))]))
 
 (defn view-results-str
   "String representation of all analysis results"
