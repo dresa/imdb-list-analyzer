@@ -114,8 +114,8 @@
   "String representation for the best and worst directors"
   [ana-results]
   (string/join [
-    (directors-ranks-strs (take 10 (:dir-ranks ana-results)) "The best directors:") "\n\n"
-    (directors-ranks-strs (take-last 10 (:dir-ranks ana-results)) "The worst directors:") "\n"]))
+    (directors-ranks-strs (take 20 (:dir-ranks ana-results)) "The best directors:") "\n\n"
+    (directors-ranks-strs (take-last 20 (:dir-ranks ana-results)) "The worst directors:") "\n"]))
 
 (defn disc-str
   "String representation of a single discrepancy result, along with ratings and p-value diff"
