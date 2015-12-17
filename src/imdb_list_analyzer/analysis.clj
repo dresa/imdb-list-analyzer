@@ -5,7 +5,8 @@
     [imdb-list-analyzer.math-tools :as mtools]
     [imdb-list-analyzer.imdb-data :as imdb]
     [imdb-list-analyzer.common :as com]
-    [clojure.set]))
+    [clojure.set])
+  (:import (java.util Collections)))
 
 (defn corr-vs-imdb
   "Compute correlation between list ratings and average IMDb ratings in given titles"
@@ -90,7 +91,8 @@
   (mtools/mean (mtools/sample-distr emp-distr randoms)))
 
 (defn- compute-reference-value
-  "Compute a statistical p-value for a director, given the following arguments:
+  "SLOW, deprecated.
+  Compute a statistical p-value for a director, given the following arguments:
     * rates: all list-ratings for a director's movies
     * emp-distr: empirical distribution of all movie ratings, regardless of director
   The quality statistic, p-value, measures the probability that a random sample of ratings
@@ -105,10 +107,24 @@
         samples (get samples-by-size num)]
     (/ (count (filter #(if (<= distr-mu mu) (< % mu) (<= % mu)) samples)) (count samples))))
 
+(defn- compute-fast-reference-value
+  "Compute reference value in a faster way.
+  Assume that samples are in sorted order, and then use a binary search."
+  [rates emp-distr samples-by-size]
+  (let [mu (double (mtools/mean rates))  ; average rate for a specific director
+        num (count rates)  ; number of ratings for the director
+        distr-mu (:mean emp-distr)  ; empirical mean represents an average director
+        samples (get samples-by-size num)  ; pre-computed, randomly generated avg rating samples
+        eps 1e-10
+        ref-mu (if (<= distr-mu mu) (- mu eps) (+ mu eps))  ; include or exclude equal samples
+        idx (Collections/binarySearch samples ref-mu)  ; find the switch point in ordered samples
+        k (if (mtools/non-neg-num? idx) idx (dec (Math/abs idx)))] ; how many samples below ref-val?
+    (/ k (count samples))))
+
 (defn- director-empirical-rank
   "Compute a statistical p-value for each director (quality measure)"
   [director-rate-lists emp-distr samples-by-size]
-  (map #(compute-reference-value % emp-distr samples-by-size) director-rate-lists))
+  (map #(compute-fast-reference-value % emp-distr samples-by-size) director-rate-lists))
 
 (defn- director-rank
   "Compute a mapping from directors to their quality measure (statistical p-value).
@@ -126,9 +142,10 @@
         samples-by-size (zipmap
                           size-range
                           (for [s size-range]
-                            (map
-                              #(sample-null-ref-value emp-distr %)
-                              (take num-samples (partition-all s randoms)))))]
+                            (sort  ; sorted to enable binary search
+                              (map
+                                #(double (sample-null-ref-value emp-distr %))
+                                (take num-samples (partition-all s randoms))))))]
     (map vector
          dirs
          (director-empirical-rank
