@@ -180,6 +180,60 @@
                    [:title :rate :imdb-rate :discrepancy]
                    [(:title t) (:rate t) (:imdb-rate t) d]))))))
 
+;; Genre analysis
+
+(defn- rating-genres
+  "Mapping that connects each genre to all ratings on
+  labeled movies, restricting to given titles and list-ratings"
+  [titles-coll col]
+  (com/invert-multimap
+    (map #(vector (col %) (:genres %)) titles-coll)))
+
+(defn genre-averages
+  "Compute the average ratings for each genre"
+  [titles-coll]
+  (let [my-genre-rates (rating-genres titles-coll :rate)
+        imdb-genre-rates (rating-genres titles-coll :imdb-rate)
+        [my-rates imdb-rates] (map #(map % titles-coll) [:rate :imdb-rate])
+        to-distr #(mtools/generate-emp-distr (frequencies %))
+        [my-distr imdb-distr] (map to-distr [my-rates imdb-rates])]
+    (reverse (sort-by
+               :avg
+               (for [g (sort (keys my-genre-rates))]
+                 (let [avg (mtools/mean (get my-genre-rates g))]
+                   {:genre g
+                    :count (count (get my-genre-rates g))
+                    :avg avg
+                    :imdb-avg (mtools/mean (get imdb-genre-rates g))
+                    :avg-q (mtools/smooth-ecdf avg my-distr)}))))))
+
+;; Analysis by year
+(defn- rating-years
+  "Mapping that connects each year to all ratings on
+  movies published that year, restricting to given titles and list-ratings"
+  [titles-coll col]
+  (com/invert-multimap
+    (map #(vector (col %) [(:year %)]) titles-coll)))
+
+(defn yearly-averages
+  "Compute for each year the average rating of movies published"
+  [titles-coll]
+  (let [my-year-rates (rating-years titles-coll :rate)
+        imdb-year-rates (rating-years titles-coll :imdb-rate)
+        [my-rates imdb-rates] (map #(map % titles-coll) [:rate :imdb-rate])
+        to-distr #(mtools/generate-emp-distr (frequencies %))
+        [my-distr imdb-distr] (map to-distr [my-rates imdb-rates])]
+    (reverse (sort-by
+               :avg
+               (for [y (sort (keys my-year-rates))]
+                 (let [avg (mtools/mean (get my-year-rates y))
+                       imdb-avg (mtools/mean (get imdb-year-rates y))]
+                   {:year y
+                    :count (count (get my-year-rates y))
+                    :avg avg
+                    :imdb-avg imdb-avg
+                    :avg-q (mtools/smooth-ecdf avg my-distr)}))))))
+
 
 ;; Dual-list analysis functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

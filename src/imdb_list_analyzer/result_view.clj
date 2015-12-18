@@ -25,7 +25,9 @@
      :entropy (ana/rating-entropy titles-coll)
      :imdb-entropy (ana/imdb-entropy titles-coll)
      :dir-ranks (ana/director-qualities titles-coll)
-     :discrepancy (ana/rating-discrepancy titles-coll)}))
+     :discrepancy (ana/rating-discrepancy titles-coll)
+     :genres (ana/genre-averages titles-coll)
+     :years (ana/yearly-averages titles-coll)}))
 
 "Maximum Shannon information entropy, given the rating scale"
 (def max-entr (ana/max-entropy (count imdb/rates-range)))
@@ -141,7 +143,51 @@
                     (discrepancy-strs (take 20 (:discrepancy ana-results)))
                     ""
                     "Surprising dislikes: Title; Rate; IMDb average; Diff in p-value"
-                    (discrepancy-strs (take-last 20 (:discrepancy ana-results)))]))
+                    (discrepancy-strs (take-last 20 (:discrepancy ana-results)))
+                    ""]))
+
+(defn genre-str
+  [genre-map]
+  (let [[genre cnt avg imdb-avg avg-quan] (vals (select-keys genre-map [:genre :count :avg :imdb-avg :avg-q]))]
+    (format
+      "%-14s; %-4s; %-5s; %-5s; %s"
+      (if (<= (count genre) 12) genre (subs genre 0 14))
+      (str cnt)
+      (limited-precision avg 3)
+      (limited-precision imdb-avg 3)
+      (limited-precision avg-quan 3))))
+
+(defn view-genres-str
+  "String representation of genres and their average ratings."
+  [ana-results]
+  (string/join "\n" ["Genre analysis:"
+                     "Genre; Count; Average rate; IMDb average rate; Average quantile"
+                     (string/join
+                       "\n"
+                       (for [g (:genres ana-results)] (genre-str g)))
+                     ""]))
+
+(defn year-str
+  [year-map]
+  (let [[year cnt avg imdb-avg avg-quan] (vals (select-keys year-map [:year :count :avg :imdb-avg :avg-q]))]
+    (format
+      "%-5s; %-3s; %-5s; %-5s; %s"
+      (str year)
+      (str cnt)
+      (limited-precision avg 2)
+      (limited-precision imdb-avg 2)
+      (limited-precision avg-quan 2))))
+
+(defn view-yearly-str
+  "String representation of yearly movies and their average ratings."
+  [ana-results]
+  (string/join "\n" ["Yearly analysis:"
+                     "Year; Count; Average rate; IMDb average rate; Average quantile"
+                     (string/join
+                       "\n"
+                       (for [y (:years ana-results)] (year-str y)))
+                     ""]))
+
 
 (defn view-results-str
   "String representation of all analysis results"
@@ -157,7 +203,9 @@
      (view-freq-str ana-results)
      (view-entropy-str ana-results)
      (view-directors-str ana-results)
-     (view-discrepancy-str ana-results)]))
+     (view-discrepancy-str ana-results)
+     (view-genres-str ana-results)
+     (view-yearly-str ana-results)]))
 
 (defn view-results
   "Print all single-list analysis results in human-readable form to standard output."
