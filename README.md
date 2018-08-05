@@ -143,7 +143,7 @@ Gives the following result:
 	----------------------------------
 	Chuck Jones               ; 1.0   ; [9 9 9 9 8 9 10]
 	Christopher Nolan         ; 1.0   ; [8 10 10 7 8 10 10 9 10]
-							  ; 1.0   ; [9 7 6 5 4 6 10 10 9 6 10 8 6 9 8 8 5 10 10 10 10 10]
+                              ; 1.0   ; [9 7 6 5 4 6 10 10 9 6 10 8 6 9 8 8 5 10 10 10 10 10]
 	Wes Anderson              ; 0.999 ; [10 7 10 9 8]
 	Darren Aronofsky          ; 0.999 ; [10 9 10 7 5 10 10]
 	Charles Chaplin           ; 0.999 ; [10 8 7 10 9 8]
@@ -186,7 +186,8 @@ Gives the following result:
 	Ivan Reitman              ; 0.007 ; [1 8 1 1 1]
 	William Lustig            ; 0.007 ; [1 1]
 
-	Surprising likes: Title; Rate; IMDb average; Diff in p-value
+	Surprising likes:
+	Title; Rate; IMDb average; Diff in p-value
 	Kesäkaverit                         ; 9  ; 5.6 ; 0.808
 	Dumb and Dumber To                  ; 9  ; 5.6 ; 0.808
 	Kuutamolla                          ; 9  ; 5.7 ; 0.799
@@ -208,7 +209,8 @@ Gives the following result:
 	Rare Exports                        ; 9  ; 6.7 ; 0.617
 	The Other Guys                      ; 9  ; 6.7 ; 0.617
 
-	Surprising dislikes: Title; Rate; IMDb average; Diff in p-value
+	Surprising dislikes:
+	Title; Rate; IMDb average; Diff in p-value
 	Witness for the Prosecution         ; 3  ; 8.4 ; -0.717
 	The Cove                            ; 3  ; 8.5 ; -0.730
 	Once Were Warriors                  ; 1  ; 7.9 ; -0.742
