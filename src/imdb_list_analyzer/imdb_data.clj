@@ -4,11 +4,10 @@
 ;; 2018-08-05 (originally 2013-06-30 and 2015-11-01)
 
 (ns imdb-list-analyzer.imdb-data
-  (:require [clojure.string :as string] ; shorthand
+  (:require [imdb-list-analyzer.common :as common] ; shorthand
             [clojure.data.csv :as csv]  ; parse CSV strings
             [cheshire.core :as json])   ; handle JSON string format
-  (:import java.nio.charset.Charset
-           [java.text ParseException
+  (:import [java.text ParseException
                       SimpleDateFormat]
            [java.util Locale
                       TimeZone
@@ -48,11 +47,6 @@ also used as keys in JSON strings."
 
 "Identifier for new IMDb 2018 CSV data format"
 (def new-format-size (count imdb-column-names-new-format))
-
-"Local encoding constant: to interpret special Western characters correctly,
- such as Scandinavian characters, make a best guess for the encoding.
- It could be, for example, 'UTF-8' or 'windows-1252'."
-(def local-encoding (.name (Charset/defaultCharset)))
 
 
 ;
@@ -177,15 +171,20 @@ also used as keys in JSON strings."
 (defn read-raw-data
   "Read IMDb ratings data from a CSV-formatted file.
    The 'file' may be a filename, a file, or a reader.
-   The result is a lazy sequence of string vectors (of fields)."
-  [file]
-  (parse-str-data (slurp file :encoding local-encoding)))
+   The result is a lazy sequence of string vectors (of fields).
+   If an 'encoding' is not given, uses system's default codepage."
+  ([file] (read-raw-data file nil))
+  ([file encoding]
+   (if encoding
+     (parse-str-data (slurp file :encoding encoding))
+     (parse-str-data (slurp file :encoding common/local-encoding)))))
+
 
 (defn read-imdb-file
   "Parse a sequence of Titles from a CSV file that contains IMDb ratings data.
   The 'file' may be a filename, a file, or a reader."
-  [file]
-  (parse-imdb-data (read-raw-data file)))
+  ([file] (read-imdb-file file nil))
+  ([file enc] (parse-imdb-data (read-raw-data file enc))))
 
 
 ;; JSON-related functions

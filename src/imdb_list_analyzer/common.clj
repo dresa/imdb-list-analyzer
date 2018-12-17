@@ -1,7 +1,9 @@
 ;;; Common functions to be used anywhere in the
 ;;; imdb-list-analyzer program.
 
-(ns imdb-list-analyzer.common)
+(ns imdb-list-analyzer.common
+  (:import java.nio.charset.Charset
+           java.io.File))
  
 (defn invert-multimap
   [rate-lists]
@@ -34,3 +36,40 @@
   (first (filter pred coll)))
 
 
+(defn file-exists?
+  "Does a given filename exist in the filesystem?"
+  [filename]
+  (.exists ^File (clojure.java.io/as-file filename)))
+
+
+"Local encoding constant: to interpret special Western characters correctly,
+ such as Scandinavian characters, make a best guess for the encoding.
+ It could be, for example, 'UTF-8', 'windows-1252', or 'Cp850'."
+(def local-encoding (.name (Charset/defaultCharset)))
+
+"Windows-related encoding needed to convert a string into target encoding for
+print-outs. Perhaps it's default codepage for 'print' method in Java on Windows."
+(def trans-enc "cp1252")
+
+(defn encoding-supported?
+  "Does this system support the encoding/codepage with given name?"
+  [name]
+  (Charset/isSupported name))
+
+(defn create-encoding
+  "Return a Charset instance what matches with given encoding name, or 'nil' if not supported."
+  [name]
+  (if (encoding-supported? name) (Charset/forName name)))
+
+(defn change-encoding
+  "Change the representative encoding of a string."
+  [s source-enc target-enc]
+  (String. (.getBytes s source-enc) (create-encoding target-enc)))
+
+(defn println-enc
+  "Print a string with given encoding (via a Windows-related encoding conversion)"
+  ([s] (println s))
+  ([s enc]
+   (if enc
+     (println (change-encoding s enc trans-enc))
+     (println s))))

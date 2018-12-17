@@ -1,7 +1,8 @@
 ;;; Viewer for results from IMDb list analysis (on a single list)
 
 (ns imdb-list-analyzer.result-view
-  (:require [clojure.string :as string]
+  (:require [imdb-list-analyzer.common :as common]
+            [clojure.string :as string]
             [imdb-list-analyzer.analysis :as ana]
             [imdb-list-analyzer.imdb-data :as imdb]
             [cheshire.core :as json])
@@ -112,12 +113,14 @@
       "Entropy of ratings (in bits)" "\n"
       entr " (in IMDb " imdb-entr "; maximum is " max-entr ")\n"])))
 
+(def num-directors 30)
+
 (defn view-directors-str
   "String representation for the best and worst directors"
   [ana-results]
   (string/join [
-    (directors-ranks-strs (take 20 (:dir-ranks ana-results)) "The best directors:") "\n\n"
-    (directors-ranks-strs (take-last 20 (:dir-ranks ana-results)) "The worst directors:") "\n"]))
+    (directors-ranks-strs (take num-directors (:dir-ranks ana-results)) "The best directors:") "\n\n"
+    (directors-ranks-strs (take-last num-directors (:dir-ranks ana-results)) "The worst directors:") "\n"]))
 
 (defn disc-str
   "String representation of a single discrepancy result, along with ratings and p-value diff"
@@ -136,14 +139,16 @@
     "\n"
     (for [dm discr-map] (disc-str (:title dm) (:rate dm) (:imdb-rate dm) (:discrepancy dm)))))
 
+(def num-surprises 30)
+
 (defn view-discrepancy-str
   "String representation for the largest discrepancies between ratings and IMDb averages."
   [ana-results]
   (string/join "\n" ["Surprising likes: Title; Rate; IMDb average; Diff in p-value"
-                    (discrepancy-strs (take 20 (:discrepancy ana-results)))
+                    (discrepancy-strs (take num-surprises (:discrepancy ana-results)))
                     ""
                     "Surprising dislikes: Title; Rate; IMDb average; Diff in p-value"
-                    (discrepancy-strs (take-last 20 (:discrepancy ana-results)))
+                    (discrepancy-strs (take-last num-surprises (:discrepancy ana-results)))
                     ""]))
 
 (defn genre-str
@@ -209,8 +214,8 @@
 
 (defn view-results
   "Print all single-list analysis results in human-readable form to standard output."
-  [ana-result]
-  (println (view-results-str ana-result)))
+  [ana-result enc]
+  (common/println-enc (view-results-str ana-result) enc))
 
 (defn jsonify-single-result
   "JSON string of an AnalysisResult."
